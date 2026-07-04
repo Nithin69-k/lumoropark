@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, MapPin, Power, PowerOff, Calendar as CalendarIcon, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, MapPin, Power, PowerOff, Calendar as CalendarIcon, Trash2, ArrowLeft, ScanLine, Circle } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listMySpaces, toggleSpaceActive, listSlots, addSlot, deleteSlot, type MySpace } from "@/lib/spaces";
+import { setLiveOccupancy } from "@/lib/lifecycle";
 import { SpacePhoto } from "@/components/SpacePhoto";
 import { fetchMyProfile } from "@/lib/profile";
 

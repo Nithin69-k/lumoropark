@@ -18,6 +18,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
 import { Route as AuthenticatedHostIndexRouteImport } from './routes/_authenticated/host.index'
+import { Route as AuthenticatedHostScanRouteImport } from './routes/_authenticated/host.scan'
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
 
 const BrowseRoute = BrowseRouteImport.update({
@@ -64,6 +65,11 @@ const AuthenticatedHostIndexRoute = AuthenticatedHostIndexRouteImport.update({
   path: '/host/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHostScanRoute = AuthenticatedHostScanRouteImport.update({
+  id: '/host/scan',
+  path: '/host/scan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHostNewRoute = AuthenticatedHostNewRouteImport.update({
   id: '/host/new',
   path: '/host/new',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/space/$id': typeof SpaceIdRoute
   '/host/new': typeof AuthenticatedHostNewRoute
+  '/host/scan': typeof AuthenticatedHostScanRoute
   '/host/': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/space/$id': typeof SpaceIdRoute
   '/host/new': typeof AuthenticatedHostNewRoute
+  '/host/scan': typeof AuthenticatedHostScanRoute
   '/host': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRoutesById {
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/space/$id': typeof SpaceIdRoute
   '/_authenticated/host/new': typeof AuthenticatedHostNewRoute
+  '/_authenticated/host/scan': typeof AuthenticatedHostScanRoute
   '/_authenticated/host/': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/space/$id'
     | '/host/new'
+    | '/host/scan'
     | '/host/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/space/$id'
     | '/host/new'
+    | '/host/scan'
     | '/host'
   id:
     | '__root__'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/space/$id'
     | '/_authenticated/host/new'
+    | '/_authenticated/host/scan'
     | '/_authenticated/host/'
   fileRoutesById: FileRoutesById
 }
@@ -215,6 +227,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHostIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/host/scan': {
+      id: '/_authenticated/host/scan'
+      path: '/host/scan'
+      fullPath: '/host/scan'
+      preLoaderRoute: typeof AuthenticatedHostScanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/host/new': {
       id: '/_authenticated/host/new'
       path: '/host/new'
@@ -230,6 +249,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
+  AuthenticatedHostScanRoute: typeof AuthenticatedHostScanRoute
   AuthenticatedHostIndexRoute: typeof AuthenticatedHostIndexRoute
 }
 
@@ -238,6 +258,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
+  AuthenticatedHostScanRoute: AuthenticatedHostScanRoute,
   AuthenticatedHostIndexRoute: AuthenticatedHostIndexRoute,
 }
 
