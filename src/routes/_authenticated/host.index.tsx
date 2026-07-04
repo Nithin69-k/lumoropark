@@ -14,7 +14,7 @@ import { listMySpaces, toggleSpaceActive, listSlots, addSlot, deleteSlot, type M
 import { SpacePhoto } from "@/components/SpacePhoto";
 import { fetchMyProfile } from "@/lib/profile";
 
-export const Route = createFileRoute("/_authenticated/host")({
+export const Route = createFileRoute("/_authenticated/host/")({
   component: HostDashboard,
 });
 
