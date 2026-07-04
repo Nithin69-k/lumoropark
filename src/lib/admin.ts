@@ -99,7 +99,11 @@ export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
 export type AdminStats = {
   users: number;
   spaces: number;
+  active_spaces: number;
   bookings: number;
+  completed_bookings: number;
+  total_revenue: number;
+  avg_trust_score: number;
   open_disputes: number;
 };
 
@@ -111,10 +115,15 @@ export async function adminStats(): Promise<AdminStats | null> {
   return {
     users: Number(row.users ?? 0),
     spaces: Number(row.spaces ?? 0),
+    active_spaces: Number(row.active_spaces ?? 0),
     bookings: Number(row.bookings ?? 0),
+    completed_bookings: Number(row.completed_bookings ?? 0),
+    total_revenue: Number(row.total_revenue ?? 0),
+    avg_trust_score: Number(row.avg_trust_score ?? 0),
     open_disputes: Number(row.open_disputes ?? 0),
   };
 }
+
 
 export function humanAction(action: string): string {
   const map: Record<string, string> = {
