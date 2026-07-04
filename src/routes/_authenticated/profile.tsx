@@ -165,6 +165,8 @@ function ProfilePage() {
           {editing && <EditForm profile={profile} onClose={() => setEditing(false)} />}
         </div>
 
+        <HistoryTabs userId={user.id} />
+
         <section className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border p-5 text-sm">
             <strong className="block text-foreground">Bookings</strong>
