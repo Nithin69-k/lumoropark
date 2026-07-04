@@ -81,17 +81,53 @@ function AdminDashboard() {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-6 space-y-8">
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<Users className="h-4 w-4" />} label="Users" value={stats?.users ?? 0} />
-          <StatCard icon={<MapPin className="h-4 w-4" />} label="Spaces" value={stats?.spaces ?? 0} />
-          <StatCard icon={<Calendar className="h-4 w-4" />} label="Bookings" value={stats?.bookings ?? 0} />
-          <StatCard
-            icon={<AlertTriangle className="h-4 w-4" />}
-            label="Open disputes"
-            value={stats?.open_disputes ?? 0}
-            tone={stats && stats.open_disputes > 0 ? "warning" : undefined}
-          />
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-semibold">Platform overview</h2>
+            <p className="text-xs text-muted-foreground">Live totals across every host, renter, and booking.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              icon={<DollarSign className="h-4 w-4" />}
+              label="Total revenue"
+              value={formatCurrency(stats?.total_revenue ?? 0)}
+              hint={`${stats?.completed_bookings ?? 0} completed stays`}
+              tone="accent"
+            />
+            <StatCard
+              icon={<Calendar className="h-4 w-4" />}
+              label="Total bookings"
+              value={formatNumber(stats?.bookings ?? 0)}
+              hint={`${stats?.completed_bookings ?? 0} completed`}
+            />
+            <StatCard
+              icon={<MapPin className="h-4 w-4" />}
+              label="Active listings"
+              value={formatNumber(stats?.active_spaces ?? 0)}
+              hint={`${stats?.spaces ?? 0} total`}
+            />
+            <StatCard
+              icon={<ShieldCheck className="h-4 w-4" />}
+              label="Avg trust score"
+              value={(stats?.avg_trust_score ?? 0).toFixed(1)}
+              hint={`${stats?.users ?? 0} users`}
+            />
+            <StatCard
+              icon={<AlertTriangle className="h-4 w-4" />}
+              label="Open disputes"
+              value={formatNumber(stats?.open_disputes ?? 0)}
+              tone={stats && stats.open_disputes > 0 ? "warning" : "success"}
+            />
+            <StatCard icon={<Users className="h-4 w-4" />} label="Users" value={formatNumber(stats?.users ?? 0)} />
+            <StatCard icon={<MapPin className="h-4 w-4" />} label="Listings (all)" value={formatNumber(stats?.spaces ?? 0)} />
+            <StatCard
+              icon={<CheckCircle2 className="h-4 w-4" />}
+              label="Completion rate"
+              value={completionRate(stats?.completed_bookings ?? 0, stats?.bookings ?? 0)}
+            />
+          </div>
         </section>
+
 
         <section>
           <h2 className="mb-3 font-semibold">Disputes</h2>
