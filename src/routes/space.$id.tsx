@@ -55,6 +55,26 @@ function SpacePage() {
     };
   }, [id]);
 
+  // Live occupancy updates via realtime
+  useEffect(() => {
+    const ch = supabase
+      .channel(`space:${id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "parking_spaces", filter: `id=eq.${id}` },
+        (payload) => {
+          const next = (payload.new as { live_occupancy_status?: string }).live_occupancy_status;
+          if (next) {
+            setDetail((d) => (d ? { ...d, live_occupancy_status: next } : d));
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [id]);
+
   const hours = (() => {
     const s = new Date(start).getTime();
     const e = new Date(end).getTime();
