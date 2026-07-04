@@ -23,11 +23,13 @@ import {
   DISPUTE_STATUS_LABEL,
   adminListDisputes,
   adminStats,
+  adminTopDemandAreas,
   isAdmin,
   resolveDispute,
   type AdminDispute,
   type DisputeStatus,
 } from "@/lib/admin";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
