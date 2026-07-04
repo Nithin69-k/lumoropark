@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, updateMyProfile, trustBand, type Profile } from "@/lib/profile";
+import { isAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
