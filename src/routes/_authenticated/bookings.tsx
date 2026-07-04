@@ -1,16 +1,27 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle, MessageSquare } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle, MessageSquare, Gavel, XCircle } from "lucide-react";
 import { z } from "zod";
+import { formatDistanceToNow } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { listMyBookings, type MyBooking } from "@/lib/search";
 import { checkoutBooking, submitReview, hasReviewedBooking } from "@/lib/lifecycle";
-import { raiseDispute } from "@/lib/admin";
+import { raiseDispute, listMyDisputesForBooking, DISPUTE_STATUS_LABEL, type MyDispute, type DisputeStatus } from "@/lib/admin";
 
 const searchSchema = z.object({ new: z.string().optional() });
 
@@ -172,6 +183,8 @@ function BookingCard({
         <div className="mt-3 text-xs text-muted-foreground">Thanks for reviewing this stay.</div>
       )}
 
+      <DisputeTracker bookingId={b.id} />
+
       <div className="mt-3 flex justify-end gap-2">
         <Button asChild size="sm" variant="outline">
           <Link to="/messages/$bookingId" params={{ bookingId: b.id }}>
@@ -184,21 +197,94 @@ function BookingCard({
   );
 }
 
+const STEPS: DisputeStatus[] = ["open", "under_review", "resolved"];
+
+function DisputeTracker({ bookingId }: { bookingId: string }) {
+  const [disputes, setDisputes] = useState<MyDispute[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    listMyDisputesForBooking(bookingId)
+      .then((r) => alive && setDisputes(r))
+      .catch(() => alive && setDisputes([]));
+    return () => { alive = false; };
+  }, [bookingId]);
+
+  if (!disputes || disputes.length === 0) return null;
+  const d = disputes[0];
+  const rejected = d.status === "rejected";
+  const currentIdx = rejected ? -1 : STEPS.indexOf(d.status);
+
+  return (
+    <div className={`mt-4 rounded-xl border p-4 ${rejected ? "border-muted bg-muted/20" : "border-warning/30 bg-warning/5"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          {rejected ? <XCircle className="h-4 w-4 text-muted-foreground" /> : <Gavel className="h-4 w-4 text-warning" />}
+          <span>Dispute · {DISPUTE_STATUS_LABEL[d.status]}</span>
+        </div>
+        <span className="text-[11px] text-muted-foreground">
+          {formatDistanceToNow(new Date(d.updated_at ?? d.created_at), { addSuffix: true })}
+        </span>
+      </div>
+
+      {!rejected ? (
+        <ol className="mt-3 flex items-center gap-2">
+          {STEPS.map((step, i) => {
+            const done = i <= currentIdx;
+            const active = i === currentIdx;
+            const label = step === "open" ? "Submitted" : step === "under_review" ? "Under review" : "Resolved";
+            return (
+              <li key={step} className="flex flex-1 items-center gap-2">
+                <div className="flex flex-col items-center">
+                  <span
+                    className={`grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold ${
+                      done ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    } ${active ? "ring-2 ring-primary/40" : ""}`}
+                  >
+                    {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+                  </span>
+                  <span className={`mt-1 text-[10px] ${active ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+                    {label}
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div className={`h-0.5 flex-1 ${i < currentIdx ? "bg-primary" : "bg-border"}`} />
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground">
+          An admin reviewed this report and chose not to take further action.
+        </p>
+      )}
+
+      <p className="mt-3 line-clamp-2 text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">You reported:</span> {d.reason}
+      </p>
+      {d.admin_notes && (
+        <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">Admin note:</span> {d.admin_notes}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ReportDialog({ bookingId }: { bookingId: string }) {
   const [open, setOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function submit() {
-    if (reason.trim().length < 5) {
-      toast.error("Please describe the issue (5+ characters)");
-      return;
-    }
     setBusy(true);
     try {
       await raiseDispute(bookingId, reason.trim());
-      toast.success("Report sent — our team will review it");
+      toast.success("Report submitted — you'll see updates on this booking");
       setOpen(false);
+      setConfirmOpen(false);
       setReason("");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send report");
@@ -208,28 +294,53 @@ function ReportDialog({ bookingId }: { bookingId: string }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-          <AlertTriangle className="mr-1 h-3.5 w-3.5" /> Report an issue
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Report an issue with this booking</DialogTitle>
-        </DialogHeader>
-        <Textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="What went wrong? (spot unavailable, damage, no-show, etc.)"
-          rows={4}
-        />
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={busy}>{busy ? "Sending…" : "Send report"}</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open && !confirmOpen} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+            <AlertTriangle className="mr-1 h-3.5 w-3.5" /> Report an issue
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report an issue with this booking</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Give us the facts — the other party and our admins will read this.
+          </p>
+          <Textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="What went wrong? (spot unavailable, damage, no-show, etc.)"
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button onClick={() => setConfirmOpen(true)} disabled={reason.trim().length < 5}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Submit this report?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your report will be sent to LumoroX admins and the other party.
+              You can't edit it after submitting — please make sure your description is accurate.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Go back</AlertDialogCancel>
+            <AlertDialogAction onClick={submit} disabled={busy}>
+              {busy ? "Sending…" : "Submit report"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
