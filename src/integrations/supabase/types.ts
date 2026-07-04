@@ -44,6 +44,13 @@ export type Database = {
             foreignKeyName: "activity_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "hosts_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -138,7 +145,21 @@ export type Database = {
             foreignKeyName: "bookings_host_id_fkey"
             columns: ["host_id"]
             isOneToOne: false
+            referencedRelation: "hosts_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_renter_id_fkey"
+            columns: ["renter_id"]
+            isOneToOne: false
+            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -194,6 +215,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -270,6 +298,13 @@ export type Database = {
           vehicle_types?: string[]
         }
         Relationships: [
+          {
+            foreignKeyName: "parking_spaces_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "hosts_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "parking_spaces_host_id_fkey"
             columns: ["host_id"]
@@ -361,7 +396,21 @@ export type Database = {
             foreignKeyName: "reviews_reviewee_id_fkey"
             columns: ["reviewee_id"]
             isOneToOne: false
+            referencedRelation: "hosts_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -445,6 +494,33 @@ export type Database = {
           f_table_schema?: unknown
           srid?: number | null
           type?: string | null
+        }
+        Relationships: []
+      }
+      hosts_public: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string | null
+          rating: number | null
+          total_bookings: number | null
+          trust_score: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          rating?: number | null
+          total_bookings?: number | null
+          trust_score?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          rating?: number | null
+          total_bookings?: number | null
+          trust_score?: number | null
         }
         Relationships: []
       }
@@ -596,6 +672,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_pending_booking: {
+        Args: { p_end: string; p_space_id: string; p_start: string }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -727,6 +807,31 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_space_detail: {
+        Args: { p_id: string }
+        Returns: {
+          address: string
+          description: string
+          has_camera: boolean
+          has_ev_charging: boolean
+          has_sensor: boolean
+          host_id: string
+          host_name: string
+          host_rating: number
+          host_trust_score: number
+          id: string
+          is_covered: boolean
+          is_gated: boolean
+          lat: number
+          live_occupancy_status: string
+          lng: number
+          photos: string[]
+          price_per_day: number
+          price_per_hour: number
+          title: string
+          vehicle_types: string[]
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       list_my_spaces: {
         Args: never
@@ -815,6 +920,37 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      search_spaces: {
+        Args: {
+          p_covered?: boolean
+          p_ends?: string
+          p_ev?: boolean
+          p_gated?: boolean
+          p_lat: number
+          p_lng: number
+          p_max_price?: number
+          p_radius_km?: number
+          p_starts?: string
+        }
+        Returns: {
+          address: string
+          distance_km: number
+          has_camera: boolean
+          has_ev_charging: boolean
+          host_id: string
+          id: string
+          is_covered: boolean
+          is_gated: boolean
+          lat: number
+          live_occupancy_status: string
+          lng: number
+          photos: string[]
+          price_per_day: number
+          price_per_hour: number
+          title: string
+          vehicle_types: string[]
+        }[]
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
