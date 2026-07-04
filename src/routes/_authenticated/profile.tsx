@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, Star, Pencil, LogOut, Car, Home } from "lucide-react";
+import { Shield, Star, Pencil, LogOut, Car, Home, Bell, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, updateMyProfile, trustBand, type Profile } from "@/lib/profile";
 import { isAdmin } from "@/lib/admin";
+import { unreadCount } from "@/lib/inbox";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
