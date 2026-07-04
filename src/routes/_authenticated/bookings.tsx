@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, QrCode, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { QrCodeImage } from "@/components/QrCodeImage";
 import { listMyBookings, type MyBooking } from "@/lib/search";
+import { checkoutBooking, submitReview, hasReviewedBooking } from "@/lib/lifecycle";
 
 const searchSchema = z.object({ new: z.string().optional() });
 
@@ -18,17 +21,27 @@ function BookingsPage() {
   const search = Route.useSearch();
   const [items, setItems] = useState<MyBooking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewed, setReviewed] = useState<Record<string, boolean>>({});
+
+  async function refresh() {
+    try {
+      const rows = await listMyBookings();
+      setItems(rows);
+      const completed = rows.filter((r) => r.status === "completed");
+      const flags = await Promise.all(completed.map((r) => hasReviewedBooking(r.id)));
+      const map: Record<string, boolean> = {};
+      completed.forEach((r, i) => (map[r.id] = flags[i]));
+      setReviewed(map);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load bookings");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    (async () => {
-      try {
-        setItems(await listMyBookings());
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not load bookings");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -51,7 +64,7 @@ function BookingsPage() {
             <CheckCircle2 className="h-5 w-5 text-primary" />
             <div>
               <div className="font-medium">Reservation created</div>
-              <div className="text-muted-foreground">Payment will be enabled once your host confirms Stripe.</div>
+              <div className="text-muted-foreground">Show the QR code on arrival — your host scans it to check you in.</div>
             </div>
           </div>
         )}
@@ -66,33 +79,14 @@ function BookingsPage() {
             <Button asChild className="mt-4"><Link to="/browse">Browse spots</Link></Button>
           </div>
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {items.map((b) => (
-              <li key={b.id} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <Link to="/space/$id" params={{ id: b.space_id }} className="text-lg font-semibold hover:underline">
-                      {b.space_title}
-                    </Link>
-                    <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />{b.space_address}
-                    </div>
-                    <div className="mt-2 flex items-center gap-1 text-sm">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      {fmt(b.start_time)} → {fmt(b.end_time)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold">${b.total_price.toFixed(2)}</div>
-                    <StatusBadge status={b.status} payment={b.payment_status} />
-                  </div>
-                </div>
-                {b.qr_checkin_code && (
-                  <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-mono">
-                    <QrCode className="h-3 w-3" /> {b.qr_checkin_code}
-                  </div>
-                )}
-              </li>
+              <BookingCard
+                key={b.id}
+                b={b}
+                alreadyReviewed={!!reviewed[b.id]}
+                onChanged={refresh}
+              />
             ))}
           </ul>
         )}
@@ -101,10 +95,140 @@ function BookingsPage() {
   );
 }
 
+function BookingCard({
+  b,
+  alreadyReviewed,
+  onChanged,
+}: {
+  b: MyBooking;
+  alreadyReviewed: boolean;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleCheckout() {
+    setBusy(true);
+    try {
+      await checkoutBooking(b.id);
+      toast.success("Checked out");
+      onChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Checkout failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <li className="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <Link to="/space/$id" params={{ id: b.space_id }} className="text-lg font-semibold hover:underline">
+            {b.space_title}
+          </Link>
+          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />{b.space_address}
+          </div>
+          <div className="mt-2 flex items-center gap-1 text-sm">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            {fmt(b.start_time)} → {fmt(b.end_time)}
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-lg font-bold">${b.total_price.toFixed(2)}</div>
+          <StatusBadge status={b.status} payment={b.payment_status} />
+        </div>
+      </div>
+
+      {(b.status === "pending" || b.status === "confirmed") && b.qr_checkin_code && (
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:gap-4">
+          <QrCodeImage value={b.qr_checkin_code} size={140} />
+          <div className="text-center sm:text-left">
+            <div className="text-sm font-medium">Show this at arrival</div>
+            <div className="mt-1 font-mono text-xs text-muted-foreground">{b.qr_checkin_code}</div>
+            <p className="mt-2 text-xs text-muted-foreground">Your host will scan or type this code to check you in.</p>
+          </div>
+        </div>
+      )}
+
+      {b.status === "active" && (
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-success/30 bg-success/5 p-3">
+          <div className="flex items-center gap-2 text-sm">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            <span>Checked in — enjoy your stay</span>
+          </div>
+          <Button size="sm" variant="outline" onClick={handleCheckout} disabled={busy}>
+            <LogOut className="mr-1 h-4 w-4" /> {busy ? "…" : "Check out"}
+          </Button>
+        </div>
+      )}
+
+      {b.status === "completed" && !alreadyReviewed && (
+        <ReviewForm bookingId={b.id} onSubmitted={onChanged} />
+      )}
+      {b.status === "completed" && alreadyReviewed && (
+        <div className="mt-3 text-xs text-muted-foreground">Thanks for reviewing this stay.</div>
+      )}
+    </li>
+  );
+}
+
+function ReviewForm({ bookingId, onSubmitted }: { bookingId: string; onSubmitted: () => void }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit() {
+    setBusy(true);
+    try {
+      await submitReview(bookingId, rating, comment.trim());
+      toast.success("Review submitted");
+      onSubmitted();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to submit review");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4">
+      <div className="text-sm font-medium">Rate your stay</div>
+      <div className="mt-2 flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}>
+            <Star
+              className={`h-6 w-6 ${n <= rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
+            />
+          </button>
+        ))}
+      </div>
+      <Textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="How was the spot? (optional)"
+        rows={2}
+        className="mt-3"
+      />
+      <div className="mt-3 flex justify-end">
+        <Button size="sm" onClick={handleSubmit} disabled={busy}>
+          {busy ? "Submitting…" : "Submit review"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function StatusBadge({ status, payment }: { status: string; payment: string }) {
-  const label = payment === "pending" ? "Awaiting payment" : status;
-  const tone = payment === "paid" ? "bg-success/10 text-success" : payment === "pending" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground";
-  return <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${tone}`}>{label}</span>;
+  const label =
+    status === "active" ? "Active" :
+    status === "completed" ? "Completed" :
+    payment === "pending" ? "Reserved" : status;
+  const tone =
+    status === "active" ? "bg-success/10 text-success" :
+    status === "completed" ? "bg-muted text-muted-foreground" :
+    "bg-warning/10 text-warning";
+  return <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${tone}`}>{label}</span>;
 }
 
 function fmt(iso: string) {
