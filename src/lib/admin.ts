@@ -127,6 +127,8 @@ export function humanAction(action: string): string {
     review_left: "Left a review",
     review_received: "Received a review",
     dispute_raised: "Raised a dispute",
+    dispute_open: "Dispute submitted",
+    dispute_under_review: "Dispute under review",
     dispute_resolved: "Dispute resolved",
     dispute_rejected: "Dispute rejected",
   };
