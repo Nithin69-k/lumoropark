@@ -68,11 +68,14 @@ function HostDashboard() {
             </Button>
             <h1 className="font-display text-lg font-bold">Host dashboard</h1>
           </div>
-          <Button asChild size="sm">
-            <Link to="/host/new">
-              <Plus className="mr-1 h-4 w-4" /> List a space
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/host/scan"><ScanLine className="mr-1 h-4 w-4" /> Check-in</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/host/new"><Plus className="mr-1 h-4 w-4" /> List a space</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
