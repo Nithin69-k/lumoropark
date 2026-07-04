@@ -124,6 +124,24 @@ export async function adminStats(): Promise<AdminStats | null> {
   };
 }
 
+export type DemandArea = {
+  address: string;
+  bookings: number;
+  revenue: number;
+  active_listings: number;
+};
+
+export async function adminTopDemandAreas(limit = 5): Promise<DemandArea[]> {
+  const { data, error } = await supabase.rpc("admin_top_demand_areas", { p_limit: limit });
+  if (error) throw error;
+  return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    address: String(r.address ?? "—"),
+    bookings: Number(r.bookings ?? 0),
+    revenue: Number(r.revenue ?? 0),
+    active_listings: Number(r.active_listings ?? 0),
+  }));
+}
+
 
 export function humanAction(action: string): string {
   const map: Record<string, string> = {

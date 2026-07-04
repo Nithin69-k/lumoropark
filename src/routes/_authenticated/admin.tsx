@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel, DollarSign, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel, DollarSign, ShieldCheck, CheckCircle2, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,13 @@ import {
   DISPUTE_STATUS_LABEL,
   adminListDisputes,
   adminStats,
+  adminTopDemandAreas,
   isAdmin,
   resolveDispute,
   type AdminDispute,
   type DisputeStatus,
 } from "@/lib/admin";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
@@ -62,10 +64,15 @@ function AdminPage() {
 
 function AdminDashboard() {
   const { data: stats } = useQuery({ queryKey: ["admin-stats"], queryFn: adminStats });
+  const { data: demand, isLoading: demandLoading } = useQuery({
+    queryKey: ["admin-top-demand"],
+    queryFn: () => adminTopDemandAreas(5),
+  });
   const { data: disputes, isLoading } = useQuery({
     queryKey: ["admin-disputes"],
     queryFn: adminListDisputes,
   });
+
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -130,8 +137,56 @@ function AdminDashboard() {
 
 
         <section>
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" /> Top demand areas
+              </h2>
+              <p className="text-xs text-muted-foreground">Locations driving the most bookings right now.</p>
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-border bg-card">
+            {demandLoading ? (
+              <div className="p-6 text-sm text-muted-foreground">Loading…</div>
+            ) : !demand || demand.length === 0 ? (
+              <div className="p-6 text-sm text-muted-foreground">No booking activity yet.</div>
+            ) : (
+              <ol className="divide-y divide-border">
+                {demand.map((area, idx) => {
+                  const max = Math.max(...demand.map((a) => a.bookings), 1);
+                  const pct = Math.max(6, Math.round((area.bookings / max) * 100));
+                  return (
+                    <li key={`${area.address}-${idx}`} className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {idx + 1}
+                            </span>
+                            <p className="truncate font-medium" title={area.address}>{area.address}</p>
+                          </div>
+                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 pl-8 text-xs text-muted-foreground">
+                            <span>{formatNumber(area.bookings)} bookings</span>
+                            <span>{formatCurrency(area.revenue)} revenue</span>
+                            <span>{formatNumber(area.active_listings)} active listing{area.active_listings === 1 ? "" : "s"}</span>
+                          </div>
+                          <div className="mt-2 ml-8 h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </div>
+        </section>
+
+        <section>
           <h2 className="mb-3 font-semibold">Disputes</h2>
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
+
             {isLoading ? (
               <div className="p-6 text-sm text-muted-foreground">Loading…</div>
             ) : !disputes || disputes.length === 0 ? (
