@@ -577,6 +577,15 @@ export type Database = {
             }
             Returns: string
           }
+      checkin_booking: {
+        Args: { p_qr_code: string }
+        Returns: {
+          booking_id: string
+          renter_name: string
+          space_title: string
+        }[]
+      }
+      checkout_booking: { Args: { p_booking_id: string }; Returns: undefined }
       create_parking_space: {
         Args: {
           p_address: string
@@ -1455,6 +1464,10 @@ export type Database = {
       st_wrapx: {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
+      }
+      submit_review: {
+        Args: { p_booking_id: string; p_comment: string; p_rating: number }
+        Returns: string
       }
       unlockrows: { Args: { "": string }; Returns: number }
       updategeometrysrid: {
