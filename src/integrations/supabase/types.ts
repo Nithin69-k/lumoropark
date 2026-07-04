@@ -705,6 +705,15 @@ export type Database = {
           users: number
         }[]
       }
+      admin_top_demand_areas: {
+        Args: { p_limit?: number }
+        Returns: {
+          active_listings: number
+          address: string
+          bookings: number
+          revenue: number
+        }[]
+      }
       checkin_booking: {
         Args: { p_qr_code: string }
         Returns: {
