@@ -286,12 +286,20 @@ function DisputeRow({ d }: { d: AdminDispute }) {
   const [target, setTarget] = useState<DisputeStatus | null>(null);
   const [notes, setNotes] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+
+  const { data: events, isLoading: eventsLoading } = useQuery({
+    queryKey: ["dispute-events", d.id],
+    queryFn: () => listDisputeEvents(d.id),
+    enabled: showTimeline,
+  });
 
   const mut = useMutation({
     mutationFn: () => resolveDispute(d.id, target!, notes),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-disputes"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
+      qc.invalidateQueries({ queryKey: ["dispute-events", d.id] });
       toast.success(`Marked ${DISPUTE_STATUS_LABEL[target!].toLowerCase()}`);
       setTarget(null);
       setNotes("");
@@ -307,8 +315,17 @@ function DisputeRow({ d }: { d: AdminDispute }) {
   return (
     <>
       <TableRow>
-        <TableCell className="text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
+        <TableCell className="text-xs text-muted-foreground align-top">
+          <button
+            type="button"
+            onClick={() => setShowTimeline((v) => !v)}
+            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 -ml-1.5 hover:bg-muted"
+            aria-expanded={showTimeline}
+            aria-label={showTimeline ? "Hide audit timeline" : "Show audit timeline"}
+          >
+            {showTimeline ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+            {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
+          </button>
         </TableCell>
         <TableCell>{d.space_title ?? "—"}</TableCell>
         <TableCell>{d.renter_name ?? "—"}</TableCell>
@@ -339,6 +356,27 @@ function DisputeRow({ d }: { d: AdminDispute }) {
           ) : null}
         </TableCell>
       </TableRow>
+
+      {showTimeline && (
+        <TableRow className="bg-muted/30 hover:bg-muted/30">
+          <TableCell colSpan={7} className="p-0">
+            <div className="px-6 py-5">
+              <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <History className="h-3.5 w-3.5" /> Audit timeline
+              </div>
+              {eventsLoading ? (
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              ) : !events || events.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No events recorded.</p>
+              ) : (
+                <DisputeTimeline events={events} />
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+
+
 
       {/* Notes dialog (only for resolve/reject) */}
       <Dialog
