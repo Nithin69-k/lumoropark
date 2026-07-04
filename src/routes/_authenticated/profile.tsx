@@ -29,6 +29,11 @@ function ProfilePage() {
     queryFn: () => fetchMyProfile(user.id),
   });
 
+  const { data: admin } = useQuery({
+    queryKey: ["is-admin", user.id],
+    queryFn: () => isAdmin(user.id),
+  });
+
   async function handleSignOut() {
     await qc.cancelQueries();
     qc.clear();
