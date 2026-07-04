@@ -138,9 +138,12 @@ function ProfilePage() {
         </div>
 
         <section className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-border p-5 text-sm">
             <strong className="block text-foreground">Bookings</strong>
-            Discovery + booking arrives in Phase 3.
+            <p className="mt-2 text-muted-foreground">Your reservations, QR check-ins, and history.</p>
+            <Button asChild size="sm" className="mt-3">
+              <Link to="/bookings">View my bookings</Link>
+            </Button>
           </div>
           <div className="rounded-2xl border border-border p-5 text-sm">
             <strong className="block text-foreground">Your listings</strong>
