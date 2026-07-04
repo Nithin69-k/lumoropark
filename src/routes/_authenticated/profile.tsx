@@ -11,10 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, updateMyProfile, trustBand, type Profile } from "@/lib/profile";
-import { isAdmin } from "@/lib/admin";
+import { humanAction, isAdmin, listMyActivity } from "@/lib/admin";
 import { unreadCount } from "@/lib/inbox";
+import { listMyBookings } from "@/lib/search";
+import { listMyReviews } from "@/lib/lifecycle";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
