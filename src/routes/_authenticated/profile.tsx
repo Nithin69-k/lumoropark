@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, updateMyProfile, trustBand, type Profile } from "@/lib/profile";
+import { isAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -26,6 +27,11 @@ function ProfilePage() {
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", user.id],
     queryFn: () => fetchMyProfile(user.id),
+  });
+
+  const { data: admin } = useQuery({
+    queryKey: ["is-admin", user.id],
+    queryFn: () => isAdmin(user.id),
   });
 
   async function handleSignOut() {
@@ -158,6 +164,22 @@ function ProfilePage() {
               <p className="mt-2 text-muted-foreground">Flip the host toggle to start listing spaces.</p>
             )}
           </div>
+          <div className="rounded-2xl border border-border p-5 text-sm">
+            <strong className="block text-foreground">Activity</strong>
+            <p className="mt-2 text-muted-foreground">Timeline of your bookings, reviews, and updates.</p>
+            <Button asChild size="sm" variant="outline" className="mt-3">
+              <Link to="/activity">View activity</Link>
+            </Button>
+          </div>
+          {admin && (
+            <div className="rounded-2xl border border-primary/40 bg-primary/5 p-5 text-sm">
+              <strong className="block text-foreground">Admin</strong>
+              <p className="mt-2 text-muted-foreground">Platform stats and dispute resolution.</p>
+              <Button asChild size="sm" className="mt-3">
+                <Link to="/admin">Open admin</Link>
+              </Button>
+            </div>
+          )}
         </section>
       </main>
     </div>
