@@ -39,12 +39,34 @@ export async function raiseDispute(bookingId: string, reason: string) {
   return data as string;
 }
 
+export type DisputeStatus = "open" | "under_review" | "resolved" | "rejected";
+
+export type MyDispute = {
+  id: string;
+  booking_id: string;
+  reason: string;
+  status: DisputeStatus;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string | null;
+};
+
+export async function listMyDisputesForBooking(bookingId: string): Promise<MyDispute[]> {
+  const { data, error } = await supabase
+    .from("disputes")
+    .select("id, booking_id, reason, status, admin_notes, created_at, updated_at")
+    .eq("booking_id", bookingId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as MyDispute[];
+}
+
 export type AdminDispute = {
   id: string;
   booking_id: string;
   raised_by: string;
   reason: string;
-  status: string;
+  status: DisputeStatus;
   admin_notes: string | null;
   created_at: string;
   renter_name: string | null;
@@ -58,7 +80,7 @@ export async function adminListDisputes(): Promise<AdminDispute[]> {
   return (data ?? []) as AdminDispute[];
 }
 
-export async function resolveDispute(id: string, status: "resolved" | "rejected", notes: string) {
+export async function resolveDispute(id: string, status: DisputeStatus, notes: string) {
   const { error } = await supabase.rpc("resolve_dispute", {
     p_dispute_id: id,
     p_status: status,
@@ -66,6 +88,13 @@ export async function resolveDispute(id: string, status: "resolved" | "rejected"
   });
   if (error) throw error;
 }
+
+export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
+  open: "Submitted",
+  under_review: "Under review",
+  resolved: "Resolved",
+  rejected: "Rejected",
+};
 
 export type AdminStats = {
   users: number;
