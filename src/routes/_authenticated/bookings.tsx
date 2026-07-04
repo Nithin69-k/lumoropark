@@ -1,14 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { listMyBookings, type MyBooking } from "@/lib/search";
 import { checkoutBooking, submitReview, hasReviewedBooking } from "@/lib/lifecycle";
+import { raiseDispute } from "@/lib/admin";
 
 const searchSchema = z.object({ new: z.string().optional() });
 
