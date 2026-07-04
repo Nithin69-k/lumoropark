@@ -35,6 +35,12 @@ function ProfilePage() {
     queryFn: () => isAdmin(user.id),
   });
 
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["notif-unread", user.id],
+    queryFn: () => unreadCount(),
+    refetchInterval: 30000,
+  });
+
   async function handleSignOut() {
     await qc.cancelQueries();
     qc.clear();
