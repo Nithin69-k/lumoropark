@@ -64,10 +64,15 @@ function AdminPage() {
 
 function AdminDashboard() {
   const { data: stats } = useQuery({ queryKey: ["admin-stats"], queryFn: adminStats });
+  const { data: demand, isLoading: demandLoading } = useQuery({
+    queryKey: ["admin-top-demand"],
+    queryFn: () => adminTopDemandAreas(5),
+  });
   const { data: disputes, isLoading } = useQuery({
     queryKey: ["admin-disputes"],
     queryFn: adminListDisputes,
   });
+
 
   return (
     <div className="min-h-screen bg-gradient-surface">
