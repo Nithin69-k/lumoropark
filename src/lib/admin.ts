@@ -89,6 +89,22 @@ export async function resolveDispute(id: string, status: DisputeStatus, notes: s
   if (error) throw error;
 }
 
+export type DisputeEvent = {
+  id: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  from_status: DisputeStatus | null;
+  to_status: DisputeStatus;
+  note: string | null;
+  created_at: string;
+};
+
+export async function listDisputeEvents(disputeId: string): Promise<DisputeEvent[]> {
+  const { data, error } = await supabase.rpc("list_dispute_events", { p_dispute_id: disputeId });
+  if (error) throw error;
+  return (data ?? []) as DisputeEvent[];
+
+
 export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
   open: "Submitted",
   under_review: "Under review",
