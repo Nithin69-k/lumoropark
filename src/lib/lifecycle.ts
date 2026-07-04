@@ -58,3 +58,53 @@ export async function hasReviewedBooking(bookingId: string): Promise<boolean> {
   if (error) throw error;
   return (data?.length ?? 0) > 0;
 }
+
+export type MyReview = Review & {
+  space_title: string | null;
+  reviewee_name: string | null;
+  direction: "given" | "received";
+};
+
+export async function listMyReviews(userId: string): Promise<MyReview[]> {
+  const [given, received] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("id, rating, comment, created_at, reviewer_id, reviewee_id, space:parking_spaces(title), reviewee:profiles!reviews_reviewee_id_fkey(full_name)")
+      .eq("reviewer_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("reviews")
+      .select("id, rating, comment, created_at, reviewer_id, reviewee_id, space:parking_spaces(title), reviewer:profiles!reviews_reviewer_id_fkey(full_name)")
+      .eq("reviewee_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+  if (given.error) throw given.error;
+  if (received.error) throw received.error;
+
+  const gRows = (given.data ?? []) as unknown as Array<{
+    id: string; rating: number; comment: string | null; created_at: string;
+    reviewer_id: string; space: { title: string | null } | null;
+    reviewee: { full_name: string | null } | null;
+  }>;
+  const rRows = (received.data ?? []) as unknown as Array<{
+    id: string; rating: number; comment: string | null; created_at: string;
+    reviewer_id: string; space: { title: string | null } | null;
+    reviewer: { full_name: string | null } | null;
+  }>;
+
+  const out: MyReview[] = [
+    ...gRows.map((r) => ({
+      id: r.id, rating: r.rating, comment: r.comment, created_at: r.created_at,
+      reviewer_id: r.reviewer_id, space_title: r.space?.title ?? null,
+      reviewee_name: r.reviewee?.full_name ?? null, direction: "given" as const,
+    })),
+    ...rRows.map((r) => ({
+      id: r.id, rating: r.rating, comment: r.comment, created_at: r.created_at,
+      reviewer_id: r.reviewer_id, space_title: r.space?.title ?? null,
+      reviewee_name: r.reviewer?.full_name ?? null, direction: "received" as const,
+    })),
+  ];
+  return out.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
