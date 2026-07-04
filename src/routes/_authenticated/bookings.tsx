@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle, MessageSquare } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -172,7 +172,12 @@ function BookingCard({
         <div className="mt-3 text-xs text-muted-foreground">Thanks for reviewing this stay.</div>
       )}
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-3 flex justify-end gap-2">
+        <Button asChild size="sm" variant="outline">
+          <Link to="/messages/$bookingId" params={{ bookingId: b.id }}>
+            <MessageSquare className="mr-1 h-4 w-4" /> Message
+          </Link>
+        </Button>
         <ReportDialog bookingId={b.id} />
       </div>
     </li>

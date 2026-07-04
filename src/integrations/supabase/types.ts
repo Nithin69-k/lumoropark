@@ -205,6 +205,85 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string
+          booking_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          booking_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          booking_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          link: string | null
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parking_spaces: {
         Row: {
           address: string
@@ -825,6 +904,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_booking_party: {
+        Args: { _booking_id: string; _user_id: string }
+        Returns: boolean
+      }
       list_my_spaces: {
         Args: never
         Returns: {
@@ -842,6 +925,7 @@ export type Database = {
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_notifications_read: { Args: never; Returns: undefined }
       nearby_spaces: {
         Args: { lat: number; lng: number; radius_km: number }
         Returns: {

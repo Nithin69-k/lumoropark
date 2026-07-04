@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Shield, Star, Pencil, LogOut, Car, Home } from "lucide-react";
+import { Shield, Star, Pencil, LogOut, Car, Home, Bell, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, updateMyProfile, trustBand, type Profile } from "@/lib/profile";
 import { isAdmin } from "@/lib/admin";
+import { unreadCount } from "@/lib/inbox";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -32,6 +33,12 @@ function ProfilePage() {
   const { data: admin } = useQuery({
     queryKey: ["is-admin", user.id],
     queryFn: () => isAdmin(user.id),
+  });
+
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["notif-unread", user.id],
+    queryFn: () => unreadCount(),
+    refetchInterval: 30000,
   });
 
   async function handleSignOut() {
@@ -76,9 +83,24 @@ function ProfilePage() {
             <span className="inline-block h-6 w-6 rounded-md bg-gradient-brand shadow-glow" />
             LumoroX Park
           </Link>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon" className="relative">
+              <Link to="/notifications" aria-label="Notifications">
+                <Bell className="h-4 w-4" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" aria-label="Messages">
+              <Link to="/messages"><MessageSquare className="h-4 w-4" /></Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            </Button>
+          </div>
         </div>
       </header>
 
