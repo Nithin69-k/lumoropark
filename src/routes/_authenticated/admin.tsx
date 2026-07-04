@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel } from "lucide-react";
+import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel, DollarSign, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -81,17 +81,53 @@ function AdminDashboard() {
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-6 space-y-8">
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<Users className="h-4 w-4" />} label="Users" value={stats?.users ?? 0} />
-          <StatCard icon={<MapPin className="h-4 w-4" />} label="Spaces" value={stats?.spaces ?? 0} />
-          <StatCard icon={<Calendar className="h-4 w-4" />} label="Bookings" value={stats?.bookings ?? 0} />
-          <StatCard
-            icon={<AlertTriangle className="h-4 w-4" />}
-            label="Open disputes"
-            value={stats?.open_disputes ?? 0}
-            tone={stats && stats.open_disputes > 0 ? "warning" : undefined}
-          />
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-semibold">Platform overview</h2>
+            <p className="text-xs text-muted-foreground">Live totals across every host, renter, and booking.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              icon={<DollarSign className="h-4 w-4" />}
+              label="Total revenue"
+              value={formatCurrency(stats?.total_revenue ?? 0)}
+              hint={`${stats?.completed_bookings ?? 0} completed stays`}
+              tone="accent"
+            />
+            <StatCard
+              icon={<Calendar className="h-4 w-4" />}
+              label="Total bookings"
+              value={formatNumber(stats?.bookings ?? 0)}
+              hint={`${stats?.completed_bookings ?? 0} completed`}
+            />
+            <StatCard
+              icon={<MapPin className="h-4 w-4" />}
+              label="Active listings"
+              value={formatNumber(stats?.active_spaces ?? 0)}
+              hint={`${stats?.spaces ?? 0} total`}
+            />
+            <StatCard
+              icon={<ShieldCheck className="h-4 w-4" />}
+              label="Avg trust score"
+              value={(stats?.avg_trust_score ?? 0).toFixed(1)}
+              hint={`${stats?.users ?? 0} users`}
+            />
+            <StatCard
+              icon={<AlertTriangle className="h-4 w-4" />}
+              label="Open disputes"
+              value={formatNumber(stats?.open_disputes ?? 0)}
+              tone={stats && stats.open_disputes > 0 ? "warning" : "success"}
+            />
+            <StatCard icon={<Users className="h-4 w-4" />} label="Users" value={formatNumber(stats?.users ?? 0)} />
+            <StatCard icon={<MapPin className="h-4 w-4" />} label="Listings (all)" value={formatNumber(stats?.spaces ?? 0)} />
+            <StatCard
+              icon={<CheckCircle2 className="h-4 w-4" />}
+              label="Completion rate"
+              value={completionRate(stats?.completed_bookings ?? 0, stats?.bookings ?? 0)}
+            />
+          </div>
         </section>
+
 
         <section>
           <h2 className="mb-3 font-semibold">Disputes</h2>
@@ -131,23 +167,51 @@ function StatCard({
   icon,
   label,
   value,
+  hint,
   tone,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
-  tone?: "warning";
+  value: number | string;
+  hint?: string;
+  tone?: "warning" | "success" | "accent";
 }) {
+  const toneClass =
+    tone === "warning"
+      ? "border-warning/40 bg-warning/5"
+      : tone === "success"
+        ? "border-success/40 bg-success/5"
+        : tone === "accent"
+          ? "border-primary/40 bg-primary/5"
+          : "border-border bg-card";
   return (
-    <div className={`rounded-2xl border p-5 ${tone === "warning" ? "border-warning/40 bg-warning/5" : "border-border bg-card"}`}>
+    <div className={`rounded-2xl border p-5 ${toneClass}`}>
       <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
         {icon}
         {label}
       </div>
       <div className="mt-2 text-3xl font-bold">{value}</div>
+      {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
     </div>
   );
 }
+
+const numberFmt = new Intl.NumberFormat("en-US");
+const currencyFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+function formatNumber(n: number): string {
+  return numberFmt.format(n);
+}
+
+function formatCurrency(n: number): string {
+  return currencyFmt.format(n);
+}
+
+function completionRate(completed: number, total: number): string {
+  if (!total) return "—";
+  return `${Math.round((completed / total) * 100)}%`;
+}
+
 
 function statusTone(s: DisputeStatus): string {
   switch (s) {

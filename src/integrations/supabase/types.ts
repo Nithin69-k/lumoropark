@@ -695,9 +695,13 @@ export type Database = {
       admin_stats: {
         Args: never
         Returns: {
+          active_spaces: number
+          avg_trust_score: number
           bookings: number
+          completed_bookings: number
           open_disputes: number
           spaces: number
+          total_revenue: number
           users: number
         }[]
       }
