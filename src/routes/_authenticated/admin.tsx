@@ -149,24 +149,38 @@ function StatCard({
   );
 }
 
+function statusTone(s: DisputeStatus): string {
+  switch (s) {
+    case "resolved": return "bg-success/10 text-success";
+    case "rejected": return "bg-muted text-muted-foreground";
+    case "under_review": return "bg-primary/10 text-primary";
+    default: return "bg-warning/10 text-warning";
+  }
+}
+
 function DisputeRow({ d }: { d: AdminDispute }) {
   const qc = useQueryClient();
-  const [open, setOpen] = useState<null | "resolved" | "rejected">(null);
+  const [target, setTarget] = useState<DisputeStatus | null>(null);
   const [notes, setNotes] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const mut = useMutation({
-    mutationFn: () => resolveDispute(d.id, open!, notes),
+    mutationFn: () => resolveDispute(d.id, target!, notes),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-disputes"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
-      toast.success(`Dispute ${open}`);
-      setOpen(null);
+      toast.success(`Marked ${DISPUTE_STATUS_LABEL[target!].toLowerCase()}`);
+      setTarget(null);
       setNotes("");
+      setConfirmOpen(false);
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const isOpen = d.status === "open";
+  const canReview = d.status === "open";
+  const canResolve = d.status === "open" || d.status === "under_review";
+  const requiresNotes = target === "resolved" || target === "rejected";
+
   return (
     <>
       <TableRow>
@@ -178,20 +192,23 @@ function DisputeRow({ d }: { d: AdminDispute }) {
         <TableCell>{d.host_name ?? "—"}</TableCell>
         <TableCell className="max-w-xs truncate" title={d.reason}>{d.reason}</TableCell>
         <TableCell>
-          <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${
-            d.status === "resolved" ? "bg-success/10 text-success" :
-            d.status === "rejected" ? "bg-muted text-muted-foreground" :
-            "bg-warning/10 text-warning"
-          }`}>{d.status}</span>
+          <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${statusTone(d.status)}`}>
+            {DISPUTE_STATUS_LABEL[d.status]}
+          </span>
         </TableCell>
         <TableCell>
-          {isOpen ? (
-            <div className="flex gap-1">
-              <Button size="sm" variant="outline" onClick={() => setOpen("resolved")}>
-                <Check className="h-3.5 w-3.5" />
+          {canResolve ? (
+            <div className="flex flex-wrap gap-1">
+              {canReview && (
+                <Button size="sm" variant="outline" onClick={() => setTarget("under_review")}>
+                  <Gavel className="mr-1 h-3.5 w-3.5" /> Review
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => { setTarget("resolved"); setNotes(""); }}>
+                <Check className="mr-1 h-3.5 w-3.5" /> Resolve
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setOpen("rejected")}>
-                <X className="h-3.5 w-3.5" />
+              <Button size="sm" variant="outline" onClick={() => { setTarget("rejected"); setNotes(""); }}>
+                <X className="mr-1 h-3.5 w-3.5" /> Reject
               </Button>
             </div>
           ) : d.admin_notes ? (
@@ -200,25 +217,66 @@ function DisputeRow({ d }: { d: AdminDispute }) {
         </TableCell>
       </TableRow>
 
-      <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
+      {/* Notes dialog (only for resolve/reject) */}
+      <Dialog
+        open={target !== null && requiresNotes && !confirmOpen}
+        onOpenChange={(o) => { if (!o) { setTarget(null); } }}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{open === "resolved" ? "Resolve dispute" : "Reject dispute"}</DialogTitle>
+            <DialogTitle>{target === "resolved" ? "Resolve dispute" : "Reject dispute"}</DialogTitle>
           </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Add a note explaining the outcome — the renter and host will both see it.
+          </p>
           <Textarea
-            placeholder="Admin notes (visible to involved parties)"
+            placeholder="Admin notes (min 5 characters)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={4}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(null)}>Cancel</Button>
-            <Button onClick={() => mut.mutate()} disabled={mut.isPending}>
-              {mut.isPending ? "…" : "Confirm"}
+            <Button variant="outline" onClick={() => setTarget(null)}>Cancel</Button>
+            <Button onClick={() => setConfirmOpen(true)} disabled={notes.trim().length < 5}>
+              Continue
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation prompt */}
+      <AlertDialog
+        open={target !== null && (requiresNotes ? confirmOpen : true)}
+        onOpenChange={(o) => {
+          if (!o) {
+            setConfirmOpen(false);
+            if (!requiresNotes) setTarget(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {target === "under_review" && "Move this dispute to under review?"}
+              {target === "resolved" && "Confirm resolution"}
+              {target === "rejected" && "Confirm rejection"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {target === "under_review"
+                ? "The renter will be notified that an admin is looking into it. You can still resolve or reject afterward."
+                : target === "resolved"
+                  ? "This closes the dispute in the renter's favour and posts your note to both parties."
+                  : "This closes the dispute without action. Both parties will see your note."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => mut.mutate()} disabled={mut.isPending}>
+              {mut.isPending ? "Working…" : "Confirm"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
