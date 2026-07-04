@@ -577,6 +577,25 @@ export type Database = {
             }
             Returns: string
           }
+      create_parking_space: {
+        Args: {
+          p_address: string
+          p_description: string
+          p_has_camera: boolean
+          p_has_ev_charging: boolean
+          p_has_sensor: boolean
+          p_is_covered: boolean
+          p_is_gated: boolean
+          p_lat: number
+          p_lng: number
+          p_photos: string[]
+          p_price_per_day: number
+          p_price_per_hour: number
+          p_title: string
+          p_vehicle_types: string[]
+        }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -709,6 +728,22 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       gettransactionid: { Args: never; Returns: unknown }
+      list_my_spaces: {
+        Args: never
+        Returns: {
+          address: string
+          created_at: string
+          id: string
+          is_active: boolean
+          lat: number
+          live_occupancy_status: string
+          lng: number
+          photos: string[]
+          price_per_day: number
+          price_per_hour: number
+          title: string
+        }[]
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       nearby_spaces: {
         Args: { lat: number; lng: number; radius_km: number }

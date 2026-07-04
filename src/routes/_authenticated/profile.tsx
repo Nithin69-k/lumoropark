@@ -142,11 +142,18 @@ function ProfilePage() {
             <strong className="block text-foreground">Bookings</strong>
             Discovery + booking arrives in Phase 3.
           </div>
-          <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-border p-5 text-sm">
             <strong className="block text-foreground">Your listings</strong>
-            {profile.is_host
-              ? "You'll be able to list your first space in Phase 2."
-              : "Flip the host toggle to start listing spaces."}
+            {profile.is_host ? (
+              <div className="mt-2">
+                <p className="text-muted-foreground">Manage your parking spaces and availability.</p>
+                <Button asChild size="sm" className="mt-3">
+                  <Link to="/host">Open host dashboard</Link>
+                </Button>
+              </div>
+            ) : (
+              <p className="mt-2 text-muted-foreground">Flip the host toggle to start listing spaces.</p>
+            )}
           </div>
         </section>
       </main>
