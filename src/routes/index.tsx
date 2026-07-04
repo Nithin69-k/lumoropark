@@ -66,13 +66,11 @@ function Landing() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link to="/auth" search={{ mode: "signup" }}>
-                Create your account
-              </Link>
+              <Link to="/browse">Find parking near me</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/auth" search={{ mode: "signin" }}>
-                I already have one
+              <Link to="/auth" search={{ mode: "signup" }}>
+                List your driveway
               </Link>
             </Button>
           </div>

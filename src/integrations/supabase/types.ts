@@ -596,6 +596,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_pending_booking: {
+        Args: { p_end: string; p_space_id: string; p_start: string }
+        Returns: string
+      }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -727,6 +731,31 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_space_detail: {
+        Args: { p_id: string }
+        Returns: {
+          address: string
+          description: string
+          has_camera: boolean
+          has_ev_charging: boolean
+          has_sensor: boolean
+          host_id: string
+          host_name: string
+          host_rating: number
+          host_trust_score: number
+          id: string
+          is_covered: boolean
+          is_gated: boolean
+          lat: number
+          live_occupancy_status: string
+          lng: number
+          photos: string[]
+          price_per_day: number
+          price_per_hour: number
+          title: string
+          vehicle_types: string[]
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       list_my_spaces: {
         Args: never
@@ -815,6 +844,37 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      search_spaces: {
+        Args: {
+          p_covered?: boolean
+          p_ends?: string
+          p_ev?: boolean
+          p_gated?: boolean
+          p_lat: number
+          p_lng: number
+          p_max_price?: number
+          p_radius_km?: number
+          p_starts?: string
+        }
+        Returns: {
+          address: string
+          distance_km: number
+          has_camera: boolean
+          has_ev_charging: boolean
+          host_id: string
+          id: string
+          is_covered: boolean
+          is_gated: boolean
+          lat: number
+          live_occupancy_status: string
+          lng: number
+          photos: string[]
+          price_per_day: number
+          price_per_hour: number
+          title: string
+          vehicle_types: string[]
+        }[]
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
