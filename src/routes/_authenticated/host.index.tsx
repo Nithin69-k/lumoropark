@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, MapPin, Power, PowerOff, Calendar as CalendarIcon, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, MapPin, Power, PowerOff, Calendar as CalendarIcon, Trash2, ArrowLeft, ScanLine, Circle } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listMySpaces, toggleSpaceActive, listSlots, addSlot, deleteSlot, type MySpace } from "@/lib/spaces";
+import { setLiveOccupancy } from "@/lib/lifecycle";
 import { SpacePhoto } from "@/components/SpacePhoto";
 import { fetchMyProfile } from "@/lib/profile";
 
@@ -67,11 +68,14 @@ function HostDashboard() {
             </Button>
             <h1 className="font-display text-lg font-bold">Host dashboard</h1>
           </div>
-          <Button asChild size="sm">
-            <Link to="/host/new">
-              <Plus className="mr-1 h-4 w-4" /> List a space
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/host/scan"><ScanLine className="mr-1 h-4 w-4" /> Check-in</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/host/new"><Plus className="mr-1 h-4 w-4" /> List a space</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -106,6 +110,13 @@ function HostDashboard() {
 }
 
 function SpaceCard({ space, onToggle }: { space: MySpace; onToggle: (active: boolean) => void }) {
+  const qc = useQueryClient();
+  const occ = useMutation({
+    mutationFn: (status: "available" | "occupied") => setLiveOccupancy(space.id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-spaces"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const isOccupied = space.live_occupancy_status === "occupied";
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <div className="relative h-40 bg-muted">
@@ -123,6 +134,19 @@ function SpaceCard({ space, onToggle }: { space: MySpace; onToggle: (active: boo
       <div className="p-4">
         <h3 className="font-semibold">{space.title}</h3>
         <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{space.address}</p>
+        <button
+          className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors ${
+            isOccupied
+              ? "border-warning/30 bg-warning/10 text-warning hover:bg-warning/20"
+              : "border-success/30 bg-success/10 text-success hover:bg-success/20"
+          }`}
+          onClick={() => occ.mutate(isOccupied ? "available" : "occupied")}
+          disabled={occ.isPending}
+          title="Tap to toggle live occupancy"
+        >
+          <Circle className={`h-2 w-2 ${isOccupied ? "fill-warning" : "fill-success"}`} />
+          {isOccupied ? "Occupied" : "Available"}
+        </button>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm">
             <strong className="text-lg">${Number(space.price_per_hour).toFixed(2)}</strong>

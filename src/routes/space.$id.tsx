@@ -55,6 +55,26 @@ function SpacePage() {
     };
   }, [id]);
 
+  // Live occupancy updates via realtime
+  useEffect(() => {
+    const ch = supabase
+      .channel(`space:${id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "parking_spaces", filter: `id=eq.${id}` },
+        (payload) => {
+          const next = (payload.new as { live_occupancy_status?: string }).live_occupancy_status;
+          if (next) {
+            setDetail((d) => (d ? { ...d, live_occupancy_status: next } : d));
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [id]);
+
   const hours = (() => {
     const s = new Date(start).getTime();
     const e = new Date(end).getTime();
@@ -118,7 +138,16 @@ function SpacePage() {
           <Button asChild variant="ghost" size="sm">
             <Link to="/browse"><ArrowLeft className="mr-1 h-4 w-4" />Back</Link>
           </Button>
-          <div className="text-sm text-muted-foreground">{detail.live_occupancy_status === "available" ? "Available now" : detail.live_occupancy_status}</div>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+              detail.live_occupancy_status === "occupied"
+                ? "bg-warning/10 text-warning"
+                : "bg-success/10 text-success"
+            }`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${detail.live_occupancy_status === "occupied" ? "bg-warning" : "bg-success"}`} />
+            {detail.live_occupancy_status === "occupied" ? "Occupied right now" : "Available now"}
+          </span>
         </div>
       </header>
 
