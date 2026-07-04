@@ -171,7 +171,60 @@ function BookingCard({
       {b.status === "completed" && alreadyReviewed && (
         <div className="mt-3 text-xs text-muted-foreground">Thanks for reviewing this stay.</div>
       )}
+
+      <div className="mt-3 flex justify-end">
+        <ReportDialog bookingId={b.id} />
+      </div>
     </li>
+  );
+}
+
+function ReportDialog({ bookingId }: { bookingId: string }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (reason.trim().length < 5) {
+      toast.error("Please describe the issue (5+ characters)");
+      return;
+    }
+    setBusy(true);
+    try {
+      await raiseDispute(bookingId, reason.trim());
+      toast.success("Report sent — our team will review it");
+      setOpen(false);
+      setReason("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send report");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+          <AlertTriangle className="mr-1 h-3.5 w-3.5" /> Report an issue
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Report an issue with this booking</DialogTitle>
+        </DialogHeader>
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="What went wrong? (spot unavailable, damage, no-show, etc.)"
+          rows={4}
+        />
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={busy}>{busy ? "Sending…" : "Send report"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
