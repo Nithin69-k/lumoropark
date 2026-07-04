@@ -157,6 +157,51 @@ export type Database = {
           },
         ]
       }
+      dispute_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          dispute_id: string
+          from_status: string | null
+          id: string
+          note: string | null
+          to_status: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          dispute_id: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          dispute_id?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_events_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           admin_notes: string | null
@@ -920,6 +965,18 @@ export type Database = {
       is_booking_party: {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
+      }
+      list_dispute_events: {
+        Args: { p_dispute_id: string }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          created_at: string
+          from_status: string
+          id: string
+          note: string
+          to_status: string
+        }[]
       }
       list_my_spaces: {
         Args: never
