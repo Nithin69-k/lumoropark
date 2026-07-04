@@ -83,9 +83,24 @@ function ProfilePage() {
             <span className="inline-block h-6 w-6 rounded-md bg-gradient-brand shadow-glow" />
             LumoroX Park
           </Link>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button asChild variant="ghost" size="icon" className="relative">
+              <Link to="/notifications" aria-label="Notifications">
+                <Bell className="h-4 w-4" />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="icon" aria-label="Messages">
+              <Link to="/messages"><MessageSquare className="h-4 w-4" /></Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            </Button>
+          </div>
         </div>
       </header>
 
