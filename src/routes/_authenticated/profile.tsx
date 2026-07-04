@@ -270,3 +270,156 @@ function EditForm({ profile, onClose }: { profile: Profile; onClose: () => void 
     </form>
   );
 }
+
+function HistoryTabs({ userId }: { userId: string }) {
+  const bookings = useQuery({
+    queryKey: ["profile-bookings", userId],
+    queryFn: () => listMyBookings(),
+  });
+  const reviews = useQuery({
+    queryKey: ["profile-reviews", userId],
+    queryFn: () => listMyReviews(userId),
+  });
+  const activity = useQuery({
+    queryKey: ["profile-activity", userId],
+    queryFn: () => listMyActivity(30),
+  });
+
+  return (
+    <section className="mt-8 rounded-3xl border border-border bg-card p-4 shadow-card md:p-6">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="font-display text-lg font-semibold">History</h2>
+      </div>
+      <Tabs defaultValue="bookings">
+        <TabsList className="w-full">
+          <TabsTrigger value="bookings" className="flex-1">
+            Bookings {bookings.data && <span className="ml-1 text-xs text-muted-foreground">({bookings.data.length})</span>}
+          </TabsTrigger>
+          <TabsTrigger value="reviews" className="flex-1">
+            Reviews {reviews.data && <span className="ml-1 text-xs text-muted-foreground">({reviews.data.length})</span>}
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex-1">Activity</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="bookings" className="mt-4">
+          {bookings.isLoading ? (
+            <SkeletonRows />
+          ) : !bookings.data || bookings.data.length === 0 ? (
+            <EmptyState text="You haven't booked a space yet." cta={{ to: "/browse", label: "Find a spot" }} />
+          ) : (
+            <ul className="space-y-2">
+              {bookings.data.slice(0, 6).map((b) => (
+                <li key={b.id}>
+                  <Link
+                    to="/bookings"
+                    className="flex items-center justify-between rounded-xl border border-border p-3 text-sm transition-colors hover:bg-accent"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate font-medium">{b.space_title}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(b.start_time).toLocaleDateString()} · ${b.total_price.toFixed(2)}
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] capitalize text-muted-foreground">
+                      {b.status}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+              {bookings.data.length > 6 && (
+                <div className="pt-2 text-center">
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to="/bookings">See all bookings</Link>
+                  </Button>
+                </div>
+              )}
+            </ul>
+          )}
+        </TabsContent>
+
+        <TabsContent value="reviews" className="mt-4">
+          {reviews.isLoading ? (
+            <SkeletonRows />
+          ) : !reviews.data || reviews.data.length === 0 ? (
+            <EmptyState text="No reviews yet. Complete a stay to leave and receive reviews." />
+          ) : (
+            <ul className="space-y-2">
+              {reviews.data.slice(0, 6).map((r) => (
+                <li key={r.id} className="rounded-xl border border-border p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">
+                        {r.direction === "given" ? "You wrote" : "You received"}
+                      </span>
+                      <span className="font-medium">
+                        {"★".repeat(r.rating)}<span className="text-muted-foreground">{"★".repeat(5 - r.rating)}</span>
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {r.space_title ?? "—"} · {r.reviewee_name ?? "—"}
+                  </div>
+                  {r.comment && <p className="mt-2 text-sm">{r.comment}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-4">
+          {activity.isLoading ? (
+            <SkeletonRows />
+          ) : !activity.data || activity.data.length === 0 ? (
+            <EmptyState text="Nothing happened yet." />
+          ) : (
+            <>
+              <ul className="space-y-2">
+                {activity.data.slice(0, 8).map((a) => (
+                  <li key={a.id} className="flex items-center justify-between rounded-xl border border-border p-3 text-sm">
+                    <span>{humanAction(a.action)}</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="pt-3 text-center">
+                <Button asChild size="sm" variant="ghost">
+                  <Link to="/activity">See full timeline</Link>
+                </Button>
+              </div>
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
+    </section>
+  );
+}
+
+function SkeletonRows() {
+  return (
+    <div className="animate-pulse space-y-2">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="h-12 rounded-xl bg-muted" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ text, cta }: { text: string; cta?: { to: string; label: string } }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+      {text}
+      {cta && (
+        <div className="mt-3">
+          <Button asChild size="sm">
+            <Link to={cta.to}>{cta.label}</Link>
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
