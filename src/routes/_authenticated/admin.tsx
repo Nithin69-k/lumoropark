@@ -2,19 +2,31 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X } from "lucide-react";
+import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  DISPUTE_STATUS_LABEL,
   adminListDisputes,
   adminStats,
   isAdmin,
   resolveDispute,
   type AdminDispute,
+  type DisputeStatus,
 } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
