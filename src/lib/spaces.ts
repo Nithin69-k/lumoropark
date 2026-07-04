@@ -39,7 +39,7 @@ export async function createSpace(input: CreateSpaceInput): Promise<string> {
     p_lat: input.lat,
     p_lng: input.lng,
     p_price_per_hour: input.price_per_hour,
-    p_price_per_day: input.price_per_day,
+    p_price_per_day: input.price_per_day as number,
     p_vehicle_types: input.vehicle_types,
     p_is_covered: input.is_covered,
     p_is_gated: input.is_gated,
