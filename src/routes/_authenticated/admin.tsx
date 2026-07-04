@@ -441,3 +441,51 @@ function DisputeRow({ d }: { d: AdminDispute }) {
     </>
   );
 }
+
+function DisputeTimeline({ events }: { events: DisputeEvent[] }) {
+  return (
+    <ol className="relative space-y-4 border-l border-border pl-5">
+      {events.map((e, idx) => {
+        const isFirst = idx === 0;
+        const label = isFirst && !e.from_status
+          ? "Submitted"
+          : `${e.from_status ? DISPUTE_STATUS_LABEL[e.from_status] : "—"} → ${DISPUTE_STATUS_LABEL[e.to_status]}`;
+        return (
+          <li key={e.id} className="relative">
+            <span
+              className={`absolute -left-[26px] top-1 h-3 w-3 rounded-full border-2 border-background ${dotTone(e.to_status)}`}
+              aria-hidden
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${statusTone(e.to_status)}`}>
+                {label}
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {format(new Date(e.created_at), "MMM d, yyyy · h:mm a")}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {e.actor_name ? `by ${e.actor_name}` : e.actor_id ? "by admin" : "by system"}
+            </p>
+            {e.note && (
+              <p className="mt-2 whitespace-pre-wrap rounded-md border border-border/70 bg-background p-3 text-sm">
+                {e.note}
+              </p>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function dotTone(s: DisputeStatus): string {
+  switch (s) {
+    case "resolved": return "bg-success";
+    case "rejected": return "bg-muted-foreground";
+    case "under_review": return "bg-primary";
+    default: return "bg-warning";
+  }
+}
+
