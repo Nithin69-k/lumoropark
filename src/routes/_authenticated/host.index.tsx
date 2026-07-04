@@ -110,6 +110,13 @@ function HostDashboard() {
 }
 
 function SpaceCard({ space, onToggle }: { space: MySpace; onToggle: (active: boolean) => void }) {
+  const qc = useQueryClient();
+  const occ = useMutation({
+    mutationFn: (status: "available" | "occupied") => setLiveOccupancy(space.id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-spaces"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const isOccupied = space.live_occupancy_status === "occupied";
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <div className="relative h-40 bg-muted">
@@ -127,6 +134,19 @@ function SpaceCard({ space, onToggle }: { space: MySpace; onToggle: (active: boo
       <div className="p-4">
         <h3 className="font-semibold">{space.title}</h3>
         <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{space.address}</p>
+        <button
+          className={`mt-2 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors ${
+            isOccupied
+              ? "border-warning/30 bg-warning/10 text-warning hover:bg-warning/20"
+              : "border-success/30 bg-success/10 text-success hover:bg-success/20"
+          }`}
+          onClick={() => occ.mutate(isOccupied ? "available" : "occupied")}
+          disabled={occ.isPending}
+          title="Tap to toggle live occupancy"
+        >
+          <Circle className={`h-2 w-2 ${isOccupied ? "fill-warning" : "fill-success"}`} />
+          {isOccupied ? "Occupied" : "Available"}
+        </button>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm">
             <strong className="text-lg">${Number(space.price_per_hour).toFixed(2)}</strong>
