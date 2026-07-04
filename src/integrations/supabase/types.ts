@@ -404,6 +404,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       geography_columns: {
@@ -577,6 +598,30 @@ export type Database = {
             }
             Returns: string
           }
+      admin_list_disputes: {
+        Args: never
+        Returns: {
+          admin_notes: string
+          booking_id: string
+          created_at: string
+          host_name: string
+          id: string
+          raised_by: string
+          reason: string
+          renter_name: string
+          space_title: string
+          status: string
+        }[]
+      }
+      admin_stats: {
+        Args: never
+        Returns: {
+          bookings: number
+          open_disputes: number
+          spaces: number
+          users: number
+        }[]
+      }
       checkin_booking: {
         Args: { p_qr_code: string }
         Returns: {
@@ -766,6 +811,20 @@ export type Database = {
         }[]
       }
       gettransactionid: { Args: never; Returns: unknown }
+      grant_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       list_my_spaces: {
         Args: never
         Returns: {
@@ -853,6 +912,14 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      raise_dispute: {
+        Args: { p_booking_id: string; p_reason: string }
+        Returns: string
+      }
+      resolve_dispute: {
+        Args: { p_dispute_id: string; p_notes: string; p_status: string }
+        Returns: undefined
+      }
       search_spaces: {
         Args: {
           p_covered?: boolean
@@ -1482,7 +1549,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -1617,6 +1684,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
