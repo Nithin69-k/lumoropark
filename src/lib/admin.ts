@@ -103,6 +103,9 @@ export async function listDisputeEvents(disputeId: string): Promise<DisputeEvent
   const { data, error } = await supabase.rpc("list_dispute_events", { p_dispute_id: disputeId });
   if (error) throw error;
   return (data ?? []) as DisputeEvent[];
+}
+
+
 
 
 export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
