@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
-import { Route as AuthenticatedHostRouteImport } from './routes/_authenticated/host'
+import { Route as AuthenticatedHostIndexRouteImport } from './routes/_authenticated/host.index'
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
 
 const AuthRoute = AuthRouteImport.update({
@@ -41,57 +41,57 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedHostRoute = AuthenticatedHostRouteImport.update({
-  id: '/host',
-  path: '/host',
+const AuthenticatedHostIndexRoute = AuthenticatedHostIndexRouteImport.update({
+  id: '/host/',
+  path: '/host/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHostNewRoute = AuthenticatedHostNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthenticatedHostRoute,
+  id: '/host/new',
+  path: '/host/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/host': typeof AuthenticatedHostRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/host/new': typeof AuthenticatedHostNewRoute
+  '/host/': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/host': typeof AuthenticatedHostRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/host/new': typeof AuthenticatedHostNewRoute
+  '/host': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/host': typeof AuthenticatedHostRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/host/new': typeof AuthenticatedHostNewRoute
+  '/_authenticated/host/': typeof AuthenticatedHostIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/host' | '/onboarding' | '/profile' | '/host/new'
+  fullPaths: '/' | '/auth' | '/onboarding' | '/profile' | '/host/new' | '/host/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/host' | '/onboarding' | '/profile' | '/host/new'
+  to: '/' | '/auth' | '/onboarding' | '/profile' | '/host/new' | '/host'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/host'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/host/new'
+    | '/_authenticated/host/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,44 +137,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/host': {
-      id: '/_authenticated/host'
+    '/_authenticated/host/': {
+      id: '/_authenticated/host/'
       path: '/host'
-      fullPath: '/host'
-      preLoaderRoute: typeof AuthenticatedHostRouteImport
+      fullPath: '/host/'
+      preLoaderRoute: typeof AuthenticatedHostIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/host/new': {
       id: '/_authenticated/host/new'
-      path: '/new'
+      path: '/host/new'
       fullPath: '/host/new'
       preLoaderRoute: typeof AuthenticatedHostNewRouteImport
-      parentRoute: typeof AuthenticatedHostRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-interface AuthenticatedHostRouteChildren {
-  AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
-}
-
-const AuthenticatedHostRouteChildren: AuthenticatedHostRouteChildren = {
-  AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
-}
-
-const AuthenticatedHostRouteWithChildren =
-  AuthenticatedHostRoute._addFileChildren(AuthenticatedHostRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedHostRoute: typeof AuthenticatedHostRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
+  AuthenticatedHostIndexRoute: typeof AuthenticatedHostIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedHostRoute: AuthenticatedHostRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
+  AuthenticatedHostIndexRoute: AuthenticatedHostIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -188,13 +179,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
