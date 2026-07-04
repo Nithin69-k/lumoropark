@@ -44,13 +44,6 @@ export type Database = {
             foreignKeyName: "activity_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "hosts_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "activity_log_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -145,21 +138,7 @@ export type Database = {
             foreignKeyName: "bookings_host_id_fkey"
             columns: ["host_id"]
             isOneToOne: false
-            referencedRelation: "hosts_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_host_id_fkey"
-            columns: ["host_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_renter_id_fkey"
-            columns: ["renter_id"]
-            isOneToOne: false
-            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -215,13 +194,6 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "disputes_raised_by_fkey"
-            columns: ["raised_by"]
-            isOneToOne: false
-            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -298,13 +270,6 @@ export type Database = {
           vehicle_types?: string[]
         }
         Relationships: [
-          {
-            foreignKeyName: "parking_spaces_host_id_fkey"
-            columns: ["host_id"]
-            isOneToOne: false
-            referencedRelation: "hosts_public"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "parking_spaces_host_id_fkey"
             columns: ["host_id"]
@@ -396,21 +361,7 @@ export type Database = {
             foreignKeyName: "reviews_reviewee_id_fkey"
             columns: ["reviewee_id"]
             isOneToOne: false
-            referencedRelation: "hosts_public"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewee_id_fkey"
-            columns: ["reviewee_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "hosts_public"
             referencedColumns: ["id"]
           },
           {
@@ -494,33 +445,6 @@ export type Database = {
           f_table_schema?: unknown
           srid?: number | null
           type?: string | null
-        }
-        Relationships: []
-      }
-      hosts_public: {
-        Row: {
-          avatar_url: string | null
-          full_name: string | null
-          id: string | null
-          rating: number | null
-          total_bookings: number | null
-          trust_score: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-          rating?: number | null
-          total_bookings?: number | null
-          trust_score?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          full_name?: string | null
-          id?: string | null
-          rating?: number | null
-          total_bookings?: number | null
-          trust_score?: number | null
         }
         Relationships: []
       }
