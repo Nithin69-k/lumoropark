@@ -167,23 +167,51 @@ function StatCard({
   icon,
   label,
   value,
+  hint,
   tone,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
-  tone?: "warning";
+  value: number | string;
+  hint?: string;
+  tone?: "warning" | "success" | "accent";
 }) {
+  const toneClass =
+    tone === "warning"
+      ? "border-warning/40 bg-warning/5"
+      : tone === "success"
+        ? "border-success/40 bg-success/5"
+        : tone === "accent"
+          ? "border-primary/40 bg-primary/5"
+          : "border-border bg-card";
   return (
-    <div className={`rounded-2xl border p-5 ${tone === "warning" ? "border-warning/40 bg-warning/5" : "border-border bg-card"}`}>
+    <div className={`rounded-2xl border p-5 ${toneClass}`}>
       <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
         {icon}
         {label}
       </div>
       <div className="mt-2 text-3xl font-bold">{value}</div>
+      {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
     </div>
   );
 }
+
+const numberFmt = new Intl.NumberFormat("en-US");
+const currencyFmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+function formatNumber(n: number): string {
+  return numberFmt.format(n);
+}
+
+function formatCurrency(n: number): string {
+  return currencyFmt.format(n);
+}
+
+function completionRate(completed: number, total: number): string {
+  if (!total) return "—";
+  return `${Math.round((completed / total) * 100)}%`;
+}
+
 
 function statusTone(s: DisputeStatus): string {
   switch (s) {
