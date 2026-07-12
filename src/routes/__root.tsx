@@ -79,21 +79,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LumoroX Park — Rent driveways and private parking by the hour" },
+      { title: "LumoroX Park — Rent private parking by the hour" },
       {
         name: "description",
         content:
-          "Find and book secure private parking spots near you. Hosts turn empty driveways into income with LumoroX Park.",
+          "Book secure private parking near you by the hour, or turn your driveway into income with LumoroX Park.",
       },
       { name: "author", content: "LumoroX Park" },
-      { property: "og:title", content: "LumoroX Park — Rent driveways and private parking by the hour" },
-      {
-        property: "og:description",
-        content:
-          "Discover, book, and check into private parking with QR codes. Trusted hosts, live availability, EV-friendly.",
-      },
+      { property: "og:site_name", content: "LumoroX Park" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "LumoroX Park",
+          url: "https://lumoropark.lovable.app",
+        }),
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

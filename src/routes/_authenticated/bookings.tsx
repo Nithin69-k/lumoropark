@@ -367,7 +367,7 @@ function ReviewForm({ bookingId, onSubmitted }: { bookingId: string; onSubmitted
       <div className="text-sm font-medium">Rate your stay</div>
       <div className="mt-2 flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} stars`}>
+          <button key={n} type="button" onClick={() => setRating(n)} aria-label={`Rate ${n} star${n === 1 ? "" : "s"}`} aria-pressed={rating === n}>
             <Star
               className={`h-6 w-6 ${n <= rating ? "fill-warning text-warning" : "text-muted-foreground"}`}
             />

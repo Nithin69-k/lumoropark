@@ -17,6 +17,58 @@ const MapPicker = lazy(() =>
 
 export const Route = createFileRoute("/space/$id")({
   component: SpacePage,
+  loader: async ({ params }) => {
+    try {
+      const detail = await getSpaceDetail(params.id);
+      return { detail };
+    } catch {
+      return { detail: null };
+    }
+  },
+  head: ({ params, loaderData }) => {
+    const url = `https://lumoropark.lovable.app/space/${params.id}`;
+    const d = loaderData?.detail;
+    const title = d ? `${d.title} — Private parking on LumoroX Park` : "Parking listing — LumoroX Park";
+    const trimmedTitle = title.length > 60 ? `${title.slice(0, 57)}…` : title;
+    const description = d
+      ? `${d.title} at ${d.address}. Book from $${d.price_per_hour}/hr on LumoroX Park.`.slice(0, 160)
+      : "Book this private parking spot by the hour on LumoroX Park.";
+    const scripts = d
+      ? [
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: d.title,
+              description: d.description ?? description,
+              url,
+              offers: {
+                "@type": "Offer",
+                price: d.price_per_hour,
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
+              },
+              additionalType: "https://schema.org/ParkingFacility",
+              address: { "@type": "PostalAddress", streetAddress: d.address },
+              geo: { "@type": "GeoCoordinates", latitude: d.lat, longitude: d.lng },
+            }),
+          },
+        ]
+      : undefined;
+    return {
+      meta: [
+        { title: trimmedTitle },
+        { name: "description", content: description },
+        { property: "og:title", content: trimmedTitle },
+        { property: "og:description", content: description },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "product" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      ...(scripts ? { scripts } : {}),
+    };
+  },
 });
 
 function SpacePage() {
