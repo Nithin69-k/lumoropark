@@ -28,11 +28,18 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
+  // Only same-origin relative paths are allowed as `next` targets.
+  const safeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : null;
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: next ?? "/onboarding", replace: true });
+      if (!data.session) return;
+      const stashed = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_next") : null;
+      if (stashed) sessionStorage.removeItem("post_auth_next");
+      navigate({ to: stashed ?? safeNext ?? "/onboarding", replace: true });
     });
-  }, [navigate, next]);
+  }, [navigate, safeNext]);
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -43,18 +50,18 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: safeNext ? window.location.origin + safeNext : window.location.origin,
             data: { full_name: fullName },
           },
         });
         if (error) throw error;
         toast.success("Account created — you're in!");
-        navigate({ to: "/onboarding", replace: true });
+        navigate({ to: safeNext ?? "/onboarding", replace: true });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Welcome back");
-        navigate({ to: next ?? "/profile", replace: true });
+        navigate({ to: safeNext ?? "/profile", replace: true });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -65,8 +72,12 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
+    // Preserve `next` across the full-page OAuth round-trip.
+    if (safeNext && typeof window !== "undefined") {
+      sessionStorage.setItem("post_auth_next", safeNext);
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.origin + "/auth",
     });
     if (result.error) {
       toast.error(result.error.message ?? "Google sign-in failed");
@@ -74,9 +85,12 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: next ?? "/onboarding", replace: true });
+    const stashed = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_next") : null;
+    if (stashed) sessionStorage.removeItem("post_auth_next");
+    navigate({ to: stashed ?? safeNext ?? "/onboarding", replace: true });
     setBusy(false);
   }
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-surface px-4 py-12">
