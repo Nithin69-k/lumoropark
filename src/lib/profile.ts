@@ -20,21 +20,39 @@ export async function fetchMyProfile(userId: string): Promise<Profile | null> {
     .eq("id", userId)
     .maybeSingle();
   if (error) throw error;
-  return (data as Profile | null) ?? null;
+  if (!data) return null;
+  const { data: contact } = await supabase
+    .from("profile_contacts")
+    .select("phone")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return { ...(data as Omit<Profile, "phone">), phone: contact?.phone ?? null };
 }
 
 export async function updateMyProfile(
   userId: string,
   patch: Partial<Pick<Profile, "full_name" | "phone" | "is_host" | "avatar_url">>,
 ): Promise<Profile> {
+  const { phone, ...profilePatch } = patch;
   const { data, error } = await supabase
     .from("profiles")
-    .update(patch)
+    .update(profilePatch)
     .eq("id", userId)
     .select("*")
     .single();
   if (error) throw error;
-  return data as Profile;
+  if (phone !== undefined) {
+    const { error: contactError } = await supabase
+      .from("profile_contacts")
+      .upsert({ user_id: userId, phone }, { onConflict: "user_id" });
+    if (contactError) throw contactError;
+  }
+  const { data: contact } = await supabase
+    .from("profile_contacts")
+    .select("phone")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return { ...(data as Omit<Profile, "phone">), phone: contact?.phone ?? null };
 }
 
 export function trustBand(score: number): {
