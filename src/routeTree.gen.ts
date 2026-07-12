@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PayRouteImport } from './routes/pay'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -32,10 +33,17 @@ import { Route as AuthenticatedHostScanRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as ApiPublicRazorpayVerifyPaymentRouteImport } from './routes/api/public/razorpay.verify-payment'
+import { Route as ApiPublicRazorpayCreateOrderRouteImport } from './routes/api/public/razorpay.create-order'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayRoute = PayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -153,12 +161,25 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRazorpayVerifyPaymentRoute =
+  ApiPublicRazorpayVerifyPaymentRouteImport.update({
+    id: '/api/public/razorpay/verify-payment',
+    path: '/api/public/razorpay/verify-payment',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRazorpayCreateOrderRoute =
+  ApiPublicRazorpayCreateOrderRouteImport.update({
+    id: '/api/public/razorpay/create-order',
+    path: '/api/public/razorpay/create-order',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
+  '/pay': typeof PayRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -177,12 +198,15 @@ export interface FileRoutesByFullPath {
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/host/': typeof AuthenticatedHostIndexRoute
   '/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
+  '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
+  '/pay': typeof PayRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -201,6 +225,8 @@ export interface FileRoutesByTo {
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/host': typeof AuthenticatedHostIndexRoute
   '/messages': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
+  '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -209,6 +235,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
+  '/pay': typeof PayRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -227,6 +254,8 @@ export interface FileRoutesById {
   '/_authenticated/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/_authenticated/host/': typeof AuthenticatedHostIndexRoute
   '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
+  '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -235,6 +264,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/mcp'
+    | '/pay'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -253,12 +283,15 @@ export interface FileRouteTypes {
     | '/messages/$bookingId'
     | '/host/'
     | '/messages/'
+    | '/api/public/razorpay/create-order'
+    | '/api/public/razorpay/verify-payment'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/browse'
     | '/mcp'
+    | '/pay'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -277,6 +310,8 @@ export interface FileRouteTypes {
     | '/messages/$bookingId'
     | '/host'
     | '/messages'
+    | '/api/public/razorpay/create-order'
+    | '/api/public/razorpay/verify-payment'
   id:
     | '__root__'
     | '/'
@@ -284,6 +319,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/mcp'
+    | '/pay'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -302,6 +338,8 @@ export interface FileRouteTypes {
     | '/_authenticated/messages/$bookingId'
     | '/_authenticated/host/'
     | '/_authenticated/messages/'
+    | '/api/public/razorpay/create-order'
+    | '/api/public/razorpay/verify-payment'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -310,12 +348,15 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   McpRoute: typeof McpRoute
+  PayRoute: typeof PayRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   SpaceIdRoute: typeof SpaceIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicRazorpayCreateOrderRoute: typeof ApiPublicRazorpayCreateOrderRoute
+  ApiPublicRazorpayVerifyPaymentRoute: typeof ApiPublicRazorpayVerifyPaymentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -325,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pay': {
+      id: '/pay'
+      path: '/pay'
+      fullPath: '/pay'
+      preLoaderRoute: typeof PayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -481,6 +529,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/razorpay/verify-payment': {
+      id: '/api/public/razorpay/verify-payment'
+      path: '/api/public/razorpay/verify-payment'
+      fullPath: '/api/public/razorpay/verify-payment'
+      preLoaderRoute: typeof ApiPublicRazorpayVerifyPaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/razorpay/create-order': {
+      id: '/api/public/razorpay/create-order'
+      path: '/api/public/razorpay/create-order'
+      fullPath: '/api/public/razorpay/create-order'
+      preLoaderRoute: typeof ApiPublicRazorpayCreateOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -523,6 +585,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   McpRoute: McpRoute,
+  PayRoute: PayRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -530,6 +593,8 @@ const rootRouteChildren: RootRouteChildren = {
   SpaceIdRoute: SpaceIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicRazorpayCreateOrderRoute: ApiPublicRazorpayCreateOrderRoute,
+  ApiPublicRazorpayVerifyPaymentRoute: ApiPublicRazorpayVerifyPaymentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
