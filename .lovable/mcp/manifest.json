@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://sgruwvyqqkkvfbbcpytu.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "lumorox-park-mcp",
+      "version": "0.1.0",
+      "title": "LumoroX Park"
+    },
+    "tools": [
+      {
+        "name": "search_spaces",
+        "title": "Search parking spaces",
+        "description": "Search active parking listings near a lat/lng location, optionally within a time window and price/feature filters.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number",
+              "description": "Latitude"
+            },
+            "lng": {
+              "type": "number",
+              "description": "Longitude"
+            },
+            "radius_km": {
+              "default": 5,
+              "description": "Search radius in kilometers",
+              "type": "number"
+            },
+            "starts": {
+              "description": "ISO start time",
+              "type": "string"
+            },
+            "ends": {
+              "description": "ISO end time",
+              "type": "string"
+            },
+            "covered": {
+              "type": "boolean"
+            },
+            "gated": {
+              "type": "boolean"
+            },
+            "ev_charging": {
+              "type": "boolean"
+            },
+            "max_price_per_hour": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_booking",
+        "title": "Create a pending parking booking",
+        "description": "Create a pending booking for the signed-in user for a given parking space and time window. Payment is completed separately in the app.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "space_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Parking space id"
+            },
+            "start_time": {
+              "type": "string",
+              "description": "ISO start timestamp with timezone"
+            },
+            "end_time": {
+              "type": "string",
+              "description": "ISO end timestamp with timezone"
+            }
+          },
+          "required": [
+            "space_id",
+            "start_time",
+            "end_time"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_bookings",
+        "title": "List my bookings",
+        "description": "List the signed-in user's parking bookings (both as renter and host), most recent first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "role": {
+              "default": "any",
+              "description": "Filter by role. 'renter' = bookings you made, 'host' = bookings on your spaces.",
+              "type": "string",
+              "enum": [
+                "renter",
+                "host",
+                "any"
+              ]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_spaces",
+        "title": "List my parking spaces",
+        "description": "List the parking spaces the signed-in user hosts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "raise_dispute",
+        "title": "Raise a booking dispute",
+        "description": "Open a dispute on one of the signed-in user's bookings, with a written reason.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "booking_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 4,
+              "description": "Short description of what went wrong"
+            }
+          },
+          "required": [
+            "booking_id",
+            "reason"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_notifications",
+        "title": "List my notifications",
+        "description": "List the signed-in user's most recent notifications.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "unread_only": {
+              "default": false,
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
