@@ -107,6 +107,37 @@
         "outputSchema": null
       },
       {
+        "name": "cancel_booking",
+        "title": "Cancel a booking",
+        "description": "Cancel a booking as its renter or host. Only bookings that are pending or confirmed (and not yet checked in) can be cancelled.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "booking_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Booking id to cancel"
+            },
+            "reason": {
+              "description": "Optional cancellation reason",
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          "required": [
+            "booking_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
         "name": "list_my_bookings",
         "title": "List my bookings",
         "description": "List the signed-in user's parking bookings (both as renter and host), most recent first.",

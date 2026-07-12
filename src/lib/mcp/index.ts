@@ -1,5 +1,6 @@
 import { auth, defineMcp } from "@lovable.dev/mcp-js";
 
+import cancelBooking from "./tools/cancel-booking";
 import createBooking from "./tools/create-booking";
 import listMyBookings from "./tools/list-my-bookings";
 import listMySpaces from "./tools/list-my-spaces";
@@ -24,6 +25,7 @@ export default defineMcp({
   tools: [
     searchSpaces,
     createBooking,
+    cancelBooking,
     listMyBookings,
     listMySpaces,
     raiseDispute,
