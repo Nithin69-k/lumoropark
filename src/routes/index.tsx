@@ -7,6 +7,41 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  head: () => ({
+    meta: [
+      { title: "LumoroX Park — Book private driveway parking" },
+      {
+        name: "description",
+        content:
+          "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park.",
+      },
+      { property: "og:title", content: "LumoroX Park — Book private driveway parking" },
+      {
+        property: "og:description",
+        content:
+          "Discover trusted private parking near you. Book hourly, check in with QR, or list your driveway to earn.",
+      },
+      { property: "og:url", content: "https://lumoropark.lovable.app/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://lumoropark.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "LumoroX Park",
+          url: "https://lumoropark.lovable.app/",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://lumoropark.lovable.app/browse?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
+  }),
 });
 
 function Landing() {
