@@ -33,9 +33,13 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: safeNext ?? "/onboarding", replace: true });
+      if (!data.session) return;
+      const stashed = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_next") : null;
+      if (stashed) sessionStorage.removeItem("post_auth_next");
+      navigate({ to: stashed ?? safeNext ?? "/onboarding", replace: true });
     });
   }, [navigate, safeNext]);
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
