@@ -62,6 +62,25 @@ function AdminDashboard() {
   });
 
 
+  const qc = useQueryClient();
+  const seed = useMutation({
+    mutationFn: seedDemoData,
+    onSuccess: (r) => {
+      toast.success(`Seeded ${r.spaces} listings, ${r.bookings} bookings, ${r.disputes} disputes`);
+      qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to seed demo data"),
+  });
+  const reset = useMutation({
+    mutationFn: resetDemoData,
+    onSuccess: (r) => {
+      toast.success(`Removed ${r.spaces_removed} demo listing${r.spaces_removed === 1 ? "" : "s"}`);
+      qc.invalidateQueries();
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to reset demo data"),
+  });
+  const [confirmReset, setConfirmReset] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
@@ -72,10 +91,46 @@ function AdminDashboard() {
           <h1 className="font-display text-lg font-bold flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" /> Admin
           </h1>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => seed.mutate()}
+              disabled={seed.isPending}
+            >
+              <Sparkles className="mr-1 h-4 w-4" />
+              {seed.isPending ? "Seeding…" : "Seed demo data"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConfirmReset(true)}
+              disabled={reset.isPending}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              Reset demo
+            </Button>
+          </div>
         </div>
       </header>
 
+      <AlertDialog open={confirmReset} onOpenChange={setConfirmReset}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove demo data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes every listing tagged <span className="font-mono">[demo]</span> you own,
+              along with their bookings and disputes. Real data is not affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => reset.mutate()}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <main className="mx-auto max-w-6xl px-5 py-6 space-y-8">
+
         <section className="space-y-4">
           <div>
             <h2 className="font-semibold">Platform overview</h2>
