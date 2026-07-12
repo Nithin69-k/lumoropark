@@ -2,7 +2,7 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel, DollarSign, ShieldCheck, CheckCircle2, TrendingUp, ChevronDown, ChevronRight, History, Clock } from "lucide-react";
+import { ArrowLeft, Shield, Users, MapPin, Calendar, AlertTriangle, Check, X, Gavel, DollarSign, ShieldCheck, CheckCircle2, TrendingUp, ChevronDown, ChevronRight, History, Clock, Sparkles, Trash2 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
 
