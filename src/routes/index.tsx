@@ -111,7 +111,9 @@ function Landing() {
           </div>
         </section>
 
-        <section className="mt-20 grid gap-5 md:grid-cols-4">
+        <section className="mt-20">
+          <h2 className="sr-only">Why LumoroX Park</h2>
+          <div className="grid gap-5 md:grid-cols-4">
           {[
             { icon: MapPin, title: "Live map", body: "See free spots update in real time as bookings happen." },
             { icon: QrCode, title: "QR check-in", body: "Scan on arrival — no keys, no waiting, no phone calls." },
