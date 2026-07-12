@@ -126,6 +126,7 @@ function Landing() {
               <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
             </div>
           ))}
+          </div>
         </section>
       </main>
     </div>
