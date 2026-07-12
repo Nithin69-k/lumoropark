@@ -85,8 +85,7 @@ export default defineTool({
     await supabase.from("activity_log").insert({
       user_id: userId,
       action: "booking_cancelled",
-      entity_type: "booking",
-      entity_id: booking_id,
+      reference_id: booking_id,
       metadata: { role, reason: reason ?? null },
     });
 
