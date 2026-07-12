@@ -79,16 +79,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LumoroX Park — Rent private parking by the hour" },
+      { title: "LumoroX Park — Book private driveway parking" },
       {
         name: "description",
         content:
-          "Book secure private parking near you by the hour, or turn your driveway into income with LumoroX Park.",
+          "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park.",
       },
       { name: "author", content: "LumoroX Park" },
       { property: "og:site_name", content: "LumoroX Park" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "LumoroX Park — Book private driveway parking" },
+      { name: "twitter:title", content: "LumoroX Park — Book private driveway parking" },
+      { property: "og:description", content: "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park." },
+      { name: "twitter:description", content: "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/1b83ce70-a55f-4586-9928-4da19426e2ba" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/1b83ce70-a55f-4586-9928-4da19426e2ba" },
     ],
     scripts: [
       {

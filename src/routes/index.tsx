@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Discover trusted private parking near you. Book hourly, check in with QR, or list your driveway to earn.",
+          "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park.",
       },
       { property: "og:url", content: "https://lumoropark.lovable.app/" },
       { property: "og:type", content: "website" },
