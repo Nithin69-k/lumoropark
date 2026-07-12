@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,35 +36,16 @@ import {
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  component: AdminPage,
+  beforeLoad: async ({ context }) => {
+    const { user } = context as { user: { id: string } };
+    const ok = await isAdmin(user.id).catch(() => false);
+    if (!ok) {
+      throw redirect({ to: "/forbidden" });
+    }
+  },
+  component: AdminDashboard,
 });
 
-function AdminPage() {
-  const { user } = Route.useRouteContext();
-  const { data: admin, isLoading: checking } = useQuery({
-    queryKey: ["is-admin", user.id],
-    queryFn: () => isAdmin(user.id),
-  });
-
-  if (checking) {
-    return <div className="min-h-screen bg-gradient-surface p-8 text-sm text-muted-foreground">Checking access…</div>;
-  }
-
-  if (!admin) {
-    return (
-      <div className="min-h-screen bg-gradient-surface px-5 py-16">
-        <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-card">
-          <Shield className="mx-auto h-10 w-10 text-muted-foreground" />
-          <h1 className="mt-4 text-xl font-bold">Admins only</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Your account doesn't have admin access.</p>
-          <Button asChild className="mt-6"><Link to="/profile">Back to profile</Link></Button>
-        </div>
-      </div>
-    );
-  }
-
-  return <AdminDashboard />;
-}
 
 function AdminDashboard() {
   const { data: stats } = useQuery({ queryKey: ["admin-stats"], queryFn: adminStats });
