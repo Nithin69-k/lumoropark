@@ -1070,6 +1070,7 @@ export type Database = {
         Args: { p_booking_id: string; p_reason: string }
         Returns: string
       }
+      reset_demo_data: { Args: never; Returns: Json }
       resolve_dispute: {
         Args: { p_dispute_id: string; p_notes: string; p_status: string }
         Returns: undefined
@@ -1105,6 +1106,7 @@ export type Database = {
           vehicle_types: string[]
         }[]
       }
+      seed_demo_data: { Args: never; Returns: Json }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
