@@ -1,5 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type SeedDemoResult = { spaces: number; bookings: number; disputes: number };
+
+export async function seedDemoData(): Promise<SeedDemoResult> {
+  const { data, error } = await supabase.rpc("seed_demo_data");
+  if (error) throw error;
+  const row = (data ?? {}) as Partial<SeedDemoResult>;
+  return {
+    spaces: Number(row.spaces ?? 0),
+    bookings: Number(row.bookings ?? 0),
+    disputes: Number(row.disputes ?? 0),
+  };
+}
+
+export async function resetDemoData(): Promise<{ spaces_removed: number }> {
+  const { data, error } = await supabase.rpc("reset_demo_data");
+  if (error) throw error;
+  const row = (data ?? {}) as { spaces_removed?: number };
+  return { spaces_removed: Number(row.spaces_removed ?? 0) };
+}
+
+
 export type ActivityRow = {
   id: string;
   user_id: string;
