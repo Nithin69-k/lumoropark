@@ -403,6 +403,27 @@ export type Database = {
           },
         ]
       }
+      profile_contacts: {
+        Row: {
+          created_at: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -410,7 +431,6 @@ export type Database = {
           full_name: string | null
           id: string
           is_host: boolean
-          phone: string | null
           rating: number
           total_bookings: number
           trust_score: number
@@ -422,7 +442,6 @@ export type Database = {
           full_name?: string | null
           id: string
           is_host?: boolean
-          phone?: string | null
           rating?: number
           total_bookings?: number
           trust_score?: number
@@ -434,7 +453,6 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_host?: boolean
-          phone?: string | null
           rating?: number
           total_bookings?: number
           trust_score?: number
@@ -758,6 +776,32 @@ export type Database = {
           bookings: number
           revenue: number
         }[]
+      }
+      cancel_booking: {
+        Args: { p_booking_id: string; p_reason?: string }
+        Returns: {
+          checked_in_at: string | null
+          checked_out_at: string | null
+          created_at: string
+          end_time: string
+          host_id: string
+          id: string
+          payment_status: string
+          qr_checkin_code: string | null
+          renter_id: string
+          space_id: string
+          start_time: string
+          status: string
+          stripe_session_id: string | null
+          total_price: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       checkin_booking: {
         Args: { p_qr_code: string }
@@ -1702,6 +1746,10 @@ export type Database = {
           table_name: string
         }
         Returns: string
+      }
+      users_share_booking: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
       }
     }
     Enums: {
