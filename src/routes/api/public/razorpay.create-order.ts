@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Razorpay from "razorpay";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -36,15 +35,28 @@ export const Route = createFileRoute("/api/public/razorpay/create-order")({
             );
           }
 
-          const currency = body.currency || "INR";
-          const receipt = body.receipt || `rcpt_${Date.now()}`;
-
-          const rzp = new Razorpay({ key_id: keyId, key_secret: keySecret });
-          const order = await rzp.orders.create({
-            amount: Math.round(amount),
-            currency,
-            receipt,
+          const auth = btoa(`${keyId}:${keySecret}`);
+          const rzpRes = await fetch("https://api.razorpay.com/v1/orders", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Basic ${auth}`,
+            },
+            body: JSON.stringify({
+              amount: Math.round(amount),
+              currency: body.currency || "INR",
+              receipt: body.receipt || `rcpt_${Date.now()}`,
+            }),
           });
+
+          const order = await rzpRes.json();
+          if (!rzpRes.ok) {
+            const status = rzpRes.status === 401 ? 401 : 500;
+            return Response.json(
+              { error: order?.error?.description || "Razorpay API error" },
+              { status, headers: CORS },
+            );
+          }
 
           return Response.json(
             {
@@ -57,8 +69,7 @@ export const Route = createFileRoute("/api/public/razorpay/create-order")({
           );
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
-          const status = /auth/i.test(message) ? 401 : 500;
-          return Response.json({ error: message }, { status, headers: CORS });
+          return Response.json({ error: message }, { status: 500, headers: CORS });
         }
       },
     },
