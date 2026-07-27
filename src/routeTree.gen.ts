@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -58,6 +59,11 @@ const AuthRoute = AuthRouteImport.update({
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -209,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/browse'
+    | '/help'
     | '/mcp'
     | '/pricing'
     | '/privacy'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/browse'
+    | '/help'
     | '/mcp'
     | '/pricing'
     | '/privacy'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/browse'
+    | '/help'
     | '/mcp'
     | '/pricing'
     | '/privacy'
@@ -408,6 +420,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  HelpRoute: typeof HelpRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -451,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/browse'
       fullPath: '/browse'
       preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -687,6 +707,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  HelpRoute: HelpRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
