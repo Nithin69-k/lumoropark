@@ -28,9 +28,18 @@ function PrivacyPage() {
     <LegalPage
       title="Privacy Policy"
       updated="27 July 2026"
-      intro="LUMORO X PARK acts as the data controller for personal data processed through this platform. This notice explains what we collect, why, who we share it with, and the choices you have."
+      intro="Parking Space Management, trading as LUMORO X PARK, acts as the data controller for personal data processed through this platform. This notice explains what we collect, why, who we share it with, and the choices you have."
     >
-      <LegalSection heading="1. Data we collect">
+      <LegalSection heading="1. Who we are">
+        <p>
+          This platform is operated by <strong>Parking Space Management</strong>, trading as LUMORO X PARK. Parking
+          Space Management is the data controller responsible for personal data processed through the service, and any
+          reference to LUMORO X PARK in this notice means Parking Space Management.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="2. Data we collect">
+
         <p>
           We collect personal data necessary to operate a secure marketplace, including:
         </p>
