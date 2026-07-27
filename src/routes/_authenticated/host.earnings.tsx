@@ -61,7 +61,7 @@ function EarningsPage() {
   const { isPro } = useSubscription();
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2">

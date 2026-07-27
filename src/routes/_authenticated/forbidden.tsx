@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/forbidden")({
 
 function ForbiddenPage() {
   return (
-    <div className="min-h-screen bg-gradient-surface px-5 py-16">
+    <div className="min-h-full bg-gradient-surface px-5 py-16">
       <div className="mx-auto max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-card">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
           <ShieldAlert className="h-7 w-7 text-destructive" />

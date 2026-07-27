@@ -44,7 +44,7 @@ function HostDashboard() {
 
   if (profile && !profile.is_host) {
     return (
-      <div className="min-h-screen bg-gradient-surface px-5 py-16">
+      <div className="min-h-full bg-gradient-surface px-5 py-16">
         <div className="mx-auto max-w-lg rounded-3xl border border-border bg-card p-8 text-center shadow-card">
           <h1 className="text-2xl font-bold">Become a host first</h1>
           <p className="mt-2 text-sm text-muted-foreground">Enable host mode in your profile to list a parking space.</p>
@@ -57,7 +57,7 @@ function HostDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
