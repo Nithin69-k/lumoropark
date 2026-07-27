@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MapPin, SlidersHorizontal, Loader2, ArrowLeft } from "lucide-react";
@@ -178,6 +178,7 @@ function BrowsePage() {
         </div>
 
         <div className="md:sticky md:top-4 md:self-start">
+          <ClientOnly fallback={<div className="h-[420px] animate-pulse rounded-2xl bg-muted" />}>
           <Suspense fallback={<div className="h-[420px] animate-pulse rounded-2xl bg-muted" />}>
             <BrowseMap
               center={center}
@@ -188,6 +189,7 @@ function BrowsePage() {
               height={520}
             />
           </Suspense>
+          </ClientOnly>
         </div>
       </main>
     </div>
