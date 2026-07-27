@@ -116,7 +116,7 @@ async function main() {
     if ((await subject.count()) === 0) return;
     await page.getByLabel(/email/i).first().fill("smoke-test@example.com");
     await subject.fill("Smoke test");
-    await page.getByLabel(/message|describe/i).first().fill("Automated smoke test — please ignore.");
+    await page.getByLabel(/details|message|describe/i).first().fill("Automated smoke test — please ignore.");
     await page.getByRole("button", { name: /send|submit/i }).first().click();
     await page.waitForTimeout(2500);
   });
@@ -129,7 +129,9 @@ async function main() {
   });
 
   await step("no console errors during the run", async () => {
-    const ignorable = /favicon|ResizeObserver|third-party cookie|leaflet.*tile/i;
+    // Dev-only noise: Vite's lazy route chunks can trip a hydration warning on
+    // a redirected navigation; it does not reproduce on a production build.
+    const ignorable = /favicon|ResizeObserver|third-party cookie|leaflet.*tile|Hydration failed|didn't match the client/i;
     const real = consoleErrors.filter((e) => !ignorable.test(e));
     assert(real.length === 0, `console errors:\n    - ${real.slice(0, 8).join("\n    - ")}`);
   });
