@@ -35,6 +35,7 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicRazorpayVerifyPaymentRouteImport } from './routes/api/public/razorpay.verify-payment'
 import { Route as ApiPublicRazorpayCreateOrderRouteImport } from './routes/api/public/razorpay.create-order'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -173,6 +174,12 @@ const ApiPublicRazorpayCreateOrderRoute =
     path: '/api/public/razorpay/create-order',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/host/': typeof AuthenticatedHostIndexRoute
   '/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -225,6 +233,7 @@ export interface FileRoutesByTo {
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/host': typeof AuthenticatedHostIndexRoute
   '/messages': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -254,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
   '/_authenticated/host/': typeof AuthenticatedHostIndexRoute
   '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/messages/$bookingId'
     | '/host/'
     | '/messages/'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   fileRoutesByTo: FileRoutesByTo
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/messages/$bookingId'
     | '/host'
     | '/messages'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   id:
@@ -338,6 +350,7 @@ export interface FileRouteTypes {
     | '/_authenticated/messages/$bookingId'
     | '/_authenticated/host/'
     | '/_authenticated/messages/'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   fileRoutesById: FileRoutesById
@@ -355,6 +368,7 @@ export interface RootRouteChildren {
   SpaceIdRoute: typeof SpaceIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicRazorpayCreateOrderRoute: typeof ApiPublicRazorpayCreateOrderRoute
   ApiPublicRazorpayVerifyPaymentRoute: typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -543,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRazorpayCreateOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -593,6 +614,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpaceIdRoute: SpaceIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicRazorpayCreateOrderRoute: ApiPublicRazorpayCreateOrderRoute,
   ApiPublicRazorpayVerifyPaymentRoute: ApiPublicRazorpayVerifyPaymentRoute,
 }
