@@ -4,7 +4,6 @@ import { MapPin, ShieldCheck, Zap, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/BrandLogo";
-import { SiteFooter } from "@/components/SiteFooter";
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -132,7 +131,6 @@ function Landing() {
         </section>
       </main>
 
-      <SiteFooter />
     </div>
 
   );
