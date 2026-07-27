@@ -30,10 +30,11 @@ function ProfilePage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ["profile", user.id],
     queryFn: () => fetchMyProfile(user.id),
   });
+
 
   const { data: admin } = useQuery({
     queryKey: ["is-admin", user.id],
