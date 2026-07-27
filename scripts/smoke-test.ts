@@ -36,7 +36,10 @@ function assert(condition: unknown, message: string): asserts condition {
 
 async function main() {
   console.log(`Smoke test against ${BASE_URL}\n`);
-  const browser = await chromium.launch();
+  // CHROME_PATH lets CI point at a preinstalled Chromium instead of Playwright's.
+  const browser = await chromium.launch(
+    process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {},
+  );
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page: Page = await context.newPage();
 
