@@ -92,6 +92,9 @@ function AdminDashboard() {
             <Shield className="h-5 w-5 text-primary" /> Admin
           </h1>
           <div className="ml-auto flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+              <Link to="/admin/payouts">Payouts</Link>
+            </Button>
             <Button
               size="sm"
               onClick={() => seed.mutate()}
