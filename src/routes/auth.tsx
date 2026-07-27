@@ -175,31 +175,37 @@ function AuthPage() {
         </Link>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-2xl font-bold">
-            {mode === "signup" ? "Create your account" : "Sign in"}
+            {mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset your password" : "Sign in"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signup"
               ? "Book parking or list your driveway — you can do both."
-              : "Welcome back to LumoroX Park."}
+              : mode === "forgot"
+                ? "We'll email you a link to choose a new password."
+                : "Welcome back to LumoroX Park."}
           </p>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-6 w-full"
-            onClick={handleGoogle}
-            disabled={busy}
-          >
-            <GoogleIcon /> Continue with Google
-          </Button>
+          {mode !== "forgot" && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-6 w-full"
+                onClick={handleGoogle}
+                disabled={busy}
+              >
+                <GoogleIcon /> Continue with Google
+              </Button>
 
-          <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">or with email</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+              <div className="my-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">or with email</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
 
-          <form onSubmit={handleEmail} className="space-y-3">
+          <form onSubmit={handleEmail} className={mode === "forgot" ? "mt-6 space-y-3" : "space-y-3"}>
             {mode === "signup" && (
               <div>
                 <Label htmlFor="name">Full name</Label>
@@ -223,34 +229,99 @@ function AuthPage() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                minLength={6}
-                required
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("forgot");
+                        setLastError(null);
+                        setResetSent(false);
+                      }}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  minLength={6}
+                  required
+                />
+              </div>
+            )}
+
+            {resetSent && mode === "forgot" && (
+              <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                Link sent to <span className="font-medium text-foreground">{email}</span>. It expires in
+                60 minutes — check spam if it doesn't arrive.
+              </p>
+            )}
+
+            {lastError && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+                <p>{lastError}</p>
+                <button
+                  type="submit"
+                  className="mt-1 font-medium underline underline-offset-2"
+                  disabled={busy}
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
             <Button type="submit" className="w-full" disabled={busy}>
-              {busy ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {busy
+                ? attempt > 1
+                  ? `Retrying (${attempt}/3)…`
+                  : "Please wait…"
+                : mode === "signup"
+                  ? "Create account"
+                  : mode === "forgot"
+                    ? "Send reset link"
+                    : "Sign in"}
             </Button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-              className="font-medium text-primary hover:underline"
-            >
-              {mode === "signup" ? "Sign in" : "Create an account"}
-            </button>
+            {mode === "forgot" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setLastError(null);
+                }}
+                className="font-medium text-primary hover:underline"
+              >
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "signup" ? "signin" : "signup");
+                    setLastError(null);
+                  }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {mode === "signup" ? "Sign in" : "Create an account"}
+                </button>
+              </>
+            )}
           </p>
         </div>
+
       </div>
     </div>
   );
