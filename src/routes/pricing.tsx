@@ -169,6 +169,9 @@ function PricingPage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
+
   );
 }
