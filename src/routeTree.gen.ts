@@ -35,6 +35,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
+import { Route as AuthenticatedAdminSupportRouteImport } from './routes/_authenticated/admin.support'
 import { Route as AuthenticatedHostIndexRouteImport } from './routes/_authenticated/host.index'
 import { Route as AuthenticatedHostEarningsRouteImport } from './routes/_authenticated/host.earnings'
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
@@ -177,6 +178,12 @@ const AuthenticatedAdminPayoutsRoute =
     path: '/admin/payouts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminSupportRoute =
+  AuthenticatedAdminSupportRouteImport.update({
+    id: '/admin/support',
+    path: '/admin/support',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHostIndexRoute = AuthenticatedHostIndexRouteImport.update({
   id: '/host/',
   path: '/host/',
@@ -242,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
@@ -276,6 +284,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/admin/support': typeof AuthenticatedAdminSupportRoute
   '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
@@ -312,6 +321,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/_authenticated/admin/support': typeof AuthenticatedAdminSupportRoute
   '/_authenticated/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/_authenticated/host/new': typeof AuthenticatedHostNewRoute
   '/_authenticated/host/scan': typeof AuthenticatedHostScanRoute
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/payouts'
+    | '/admin/support'
     | '/host/earnings'
     | '/host/new'
     | '/host/scan'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/payouts'
+    | '/admin/support'
     | '/host/earnings'
     | '/host/new'
     | '/host/scan'
@@ -417,6 +429,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/payouts'
+    | '/_authenticated/admin/support'
     | '/_authenticated/host/earnings'
     | '/_authenticated/host/new'
     | '/_authenticated/host/scan'
@@ -633,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/support': {
+      id: '/_authenticated/admin/support'
+      path: '/admin/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AuthenticatedAdminSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/host/': {
       id: '/_authenticated/host/'
       path: '/host'
@@ -693,6 +713,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
+  AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedHostEarningsRoute: typeof AuthenticatedHostEarningsRoute
   AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
   AuthenticatedHostScanRoute: typeof AuthenticatedHostScanRoute
@@ -710,6 +731,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
+  AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedHostEarningsRoute: AuthenticatedHostEarningsRoute,
   AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
   AuthenticatedHostScanRoute: AuthenticatedHostScanRoute,
