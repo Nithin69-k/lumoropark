@@ -29,7 +29,38 @@ export type CreateSpaceInput = {
   has_camera: boolean;
   has_sensor: boolean;
   photos: string[];
+  cancellation_policy: CancellationPolicy;
 };
+
+export type CancellationPolicy = "flexible" | "moderate" | "strict";
+
+export const CANCELLATION_POLICIES: {
+  value: CancellationPolicy;
+  label: string;
+  hours: number;
+  blurb: string;
+}[] = [
+  { value: "flexible", label: "Flexible", hours: 1, blurb: "Full refund up to 1 hour before start." },
+  { value: "moderate", label: "Moderate", hours: 12, blurb: "Full refund up to 12 hours before start." },
+  { value: "strict", label: "Strict", hours: 24, blurb: "Full refund up to 24 hours before start." },
+];
+
+export function policyLabel(p: string | null | undefined) {
+  return CANCELLATION_POLICIES.find((x) => x.value === p) ?? CANCELLATION_POLICIES[1];
+}
+
+export type ListingQuota = { used: number; max_allowed: number; is_pro: boolean };
+
+export async function getMyListingQuota(): Promise<ListingQuota> {
+  const { data, error } = await supabase.rpc("my_listing_quota");
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as ListingQuota | undefined;
+  return {
+    used: Number(row?.used ?? 0),
+    max_allowed: Number(row?.max_allowed ?? 2),
+    is_pro: !!row?.is_pro,
+  };
+}
 
 export async function createSpace(input: CreateSpaceInput): Promise<string> {
   const { data, error } = await supabase.rpc("create_parking_space", {
@@ -47,7 +78,8 @@ export async function createSpace(input: CreateSpaceInput): Promise<string> {
     p_has_camera: input.has_camera,
     p_has_sensor: input.has_sensor,
     p_photos: input.photos,
-  });
+    p_cancellation_policy: input.cancellation_policy,
+  } as never);
   if (error) throw error;
   return data as string;
 }
