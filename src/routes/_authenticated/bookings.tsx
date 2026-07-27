@@ -19,6 +19,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { QrCodeImage } from "@/components/QrCodeImage";
+import { PayBookingButton } from "@/components/PayBookingButton";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { listMyBookings, type MyBooking } from "@/lib/search";
 import { checkoutBooking, submitReview, hasReviewedBooking } from "@/lib/lifecycle";
 import { raiseDispute, listMyDisputesForBooking, DISPUTE_STATUS_LABEL, type MyDispute, type DisputeStatus } from "@/lib/admin";
@@ -59,6 +61,7 @@ function BookingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-surface">
+      <PaymentTestModeBanner />
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
@@ -153,7 +156,11 @@ function BookingCard({
         </div>
       </div>
 
-      {(b.status === "pending" || b.status === "confirmed") && b.qr_checkin_code && (
+      {b.payment_status !== "paid" && (b.status === "pending" || b.status === "confirmed") && (
+        <PayBookingButton bookingId={b.id} />
+      )}
+
+      {b.status === "pending" && b.payment_status !== "paid" ? null : (b.status === "pending" || b.status === "confirmed") && b.qr_checkin_code && (
         <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:gap-4">
           <QrCodeImage value={b.qr_checkin_code} size={140} />
           <div className="text-center sm:text-left">

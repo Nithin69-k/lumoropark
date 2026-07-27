@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as BrowseRouteImport } from './routes/browse'
@@ -22,23 +23,31 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedForbiddenRouteImport } from './routes/_authenticated/forbidden'
 import { Route as AuthenticatedBookingsRouteImport } from './routes/_authenticated/bookings'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedMessagesIndexRouteImport } from './routes/_authenticated/messages.index'
 import { Route as AuthenticatedHostIndexRouteImport } from './routes/_authenticated/host.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedMessagesBookingIdRouteImport } from './routes/_authenticated/messages.$bookingId'
 import { Route as AuthenticatedHostScanRouteImport } from './routes/_authenticated/host.scan'
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
+import { Route as AuthenticatedHostEarningsRouteImport } from './routes/_authenticated/host.earnings'
+import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicRazorpayVerifyPaymentRouteImport } from './routes/api/public/razorpay.verify-payment'
 import { Route as ApiPublicRazorpayCreateOrderRouteImport } from './routes/api/public/razorpay.create-order'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayRoute = PayRouteImport.update({
@@ -101,11 +110,6 @@ const AuthenticatedBookingsRoute = AuthenticatedBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
   id: '/activity',
   path: '/activity',
@@ -134,6 +138,11 @@ const AuthenticatedHostIndexRoute = AuthenticatedHostIndexRouteImport.update({
   path: '/host/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMessagesBookingIdRoute =
   AuthenticatedMessagesBookingIdRouteImport.update({
     id: '/messages/$bookingId',
@@ -150,6 +159,18 @@ const AuthenticatedHostNewRoute = AuthenticatedHostNewRouteImport.update({
   path: '/host/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHostEarningsRoute =
+  AuthenticatedHostEarningsRouteImport.update({
+    id: '/host/earnings',
+    path: '/host/earnings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPayoutsRoute =
+  AuthenticatedAdminPayoutsRouteImport.update({
+    id: '/admin/payouts',
+    path: '/admin/payouts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -173,6 +194,12 @@ const ApiPublicRazorpayCreateOrderRoute =
     path: '/api/public/razorpay/create-order',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -180,11 +207,11 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
   '/pay': typeof PayRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/forbidden': typeof AuthenticatedForbiddenRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -193,11 +220,15 @@ export interface FileRoutesByFullPath {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/host/': typeof AuthenticatedHostIndexRoute
   '/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -207,11 +238,11 @@ export interface FileRoutesByTo {
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
   '/pay': typeof PayRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/bookings': typeof AuthenticatedBookingsRoute
   '/forbidden': typeof AuthenticatedForbiddenRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -220,11 +251,15 @@ export interface FileRoutesByTo {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/host': typeof AuthenticatedHostIndexRoute
   '/messages': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -236,11 +271,11 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
   '/pay': typeof PayRoute
+  '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/bookings': typeof AuthenticatedBookingsRoute
   '/_authenticated/forbidden': typeof AuthenticatedForbiddenRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -249,11 +284,15 @@ export interface FileRoutesById {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/_authenticated/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/_authenticated/host/new': typeof AuthenticatedHostNewRoute
   '/_authenticated/host/scan': typeof AuthenticatedHostScanRoute
   '/_authenticated/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/host/': typeof AuthenticatedHostIndexRoute
   '/_authenticated/messages/': typeof AuthenticatedMessagesIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/razorpay/create-order': typeof ApiPublicRazorpayCreateOrderRoute
   '/api/public/razorpay/verify-payment': typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -265,11 +304,11 @@ export interface FileRouteTypes {
     | '/browse'
     | '/mcp'
     | '/pay'
+    | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
-    | '/admin'
     | '/bookings'
     | '/forbidden'
     | '/notifications'
@@ -278,11 +317,15 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/payouts'
+    | '/host/earnings'
     | '/host/new'
     | '/host/scan'
     | '/messages/$bookingId'
+    | '/admin/'
     | '/host/'
     | '/messages/'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   fileRoutesByTo: FileRoutesByTo
@@ -292,11 +335,11 @@ export interface FileRouteTypes {
     | '/browse'
     | '/mcp'
     | '/pay'
+    | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
-    | '/admin'
     | '/bookings'
     | '/forbidden'
     | '/notifications'
@@ -305,11 +348,15 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/payouts'
+    | '/host/earnings'
     | '/host/new'
     | '/host/scan'
     | '/messages/$bookingId'
+    | '/admin'
     | '/host'
     | '/messages'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   id:
@@ -320,11 +367,11 @@ export interface FileRouteTypes {
     | '/browse'
     | '/mcp'
     | '/pay'
+    | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/activity'
-    | '/_authenticated/admin'
     | '/_authenticated/bookings'
     | '/_authenticated/forbidden'
     | '/_authenticated/notifications'
@@ -333,11 +380,15 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/admin/payouts'
+    | '/_authenticated/host/earnings'
     | '/_authenticated/host/new'
     | '/_authenticated/host/scan'
     | '/_authenticated/messages/$bookingId'
+    | '/_authenticated/admin/'
     | '/_authenticated/host/'
     | '/_authenticated/messages/'
+    | '/api/public/payments/webhook'
     | '/api/public/razorpay/create-order'
     | '/api/public/razorpay/verify-payment'
   fileRoutesById: FileRoutesById
@@ -349,12 +400,14 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   McpRoute: typeof McpRoute
   PayRoute: typeof PayRoute
+  PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   SpaceIdRoute: typeof SpaceIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicRazorpayCreateOrderRoute: typeof ApiPublicRazorpayCreateOrderRoute
   ApiPublicRazorpayVerifyPaymentRoute: typeof ApiPublicRazorpayVerifyPaymentRoute
 }
@@ -366,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pay': {
@@ -452,13 +512,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBookingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/activity': {
       id: '/_authenticated/activity'
       path: '/activity'
@@ -494,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHostIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/messages/$bookingId': {
       id: '/_authenticated/messages/$bookingId'
       path: '/messages/$bookingId'
@@ -513,6 +573,20 @@ declare module '@tanstack/react-router' {
       path: '/host/new'
       fullPath: '/host/new'
       preLoaderRoute: typeof AuthenticatedHostNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/host/earnings': {
+      id: '/_authenticated/host/earnings'
+      path: '/host/earnings'
+      fullPath: '/host/earnings'
+      preLoaderRoute: typeof AuthenticatedHostEarningsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/payouts': {
+      id: '/_authenticated/admin/payouts'
+      path: '/admin/payouts'
+      fullPath: '/admin/payouts'
+      preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/.mcp/invoke-tool/$tool': {
@@ -543,35 +617,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicRazorpayCreateOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBookingsRoute: typeof AuthenticatedBookingsRoute
   AuthenticatedForbiddenRoute: typeof AuthenticatedForbiddenRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
+  AuthenticatedHostEarningsRoute: typeof AuthenticatedHostEarningsRoute
   AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
   AuthenticatedHostScanRoute: typeof AuthenticatedHostScanRoute
   AuthenticatedMessagesBookingIdRoute: typeof AuthenticatedMessagesBookingIdRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedHostIndexRoute: typeof AuthenticatedHostIndexRoute
   AuthenticatedMessagesIndexRoute: typeof AuthenticatedMessagesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBookingsRoute: AuthenticatedBookingsRoute,
   AuthenticatedForbiddenRoute: AuthenticatedForbiddenRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
+  AuthenticatedHostEarningsRoute: AuthenticatedHostEarningsRoute,
   AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
   AuthenticatedHostScanRoute: AuthenticatedHostScanRoute,
   AuthenticatedMessagesBookingIdRoute: AuthenticatedMessagesBookingIdRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedHostIndexRoute: AuthenticatedHostIndexRoute,
   AuthenticatedMessagesIndexRoute: AuthenticatedMessagesIndexRoute,
 }
@@ -586,6 +671,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   McpRoute: McpRoute,
   PayRoute: PayRoute,
+  PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -593,6 +679,7 @@ const rootRouteChildren: RootRouteChildren = {
   SpaceIdRoute: SpaceIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicRazorpayCreateOrderRoute: ApiPublicRazorpayCreateOrderRoute,
   ApiPublicRazorpayVerifyPaymentRoute: ApiPublicRazorpayVerifyPaymentRoute,
 }

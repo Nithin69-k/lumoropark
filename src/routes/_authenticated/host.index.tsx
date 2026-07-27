@@ -70,6 +70,9 @@ function HostDashboard() {
           </div>
           <div className="flex gap-2">
             <Button asChild size="sm" variant="outline">
+              <Link to="/host/earnings">Earnings</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
               <Link to="/host/scan"><ScanLine className="mr-1 h-4 w-4" /> Check-in</Link>
             </Button>
             <Button asChild size="sm">
