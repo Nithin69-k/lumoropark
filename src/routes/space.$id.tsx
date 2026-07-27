@@ -11,6 +11,7 @@ import { SpacePhoto } from "@/components/SpacePhoto";
 import { supabase } from "@/integrations/supabase/client";
 import { getSpaceDetail, createPendingBooking, type SpaceDetail } from "@/lib/search";
 import { trustBand } from "@/lib/profile";
+import { MapFrame } from "@/components/MapFrame";
 
 const MapPicker = lazy(() =>
   import("@/components/MapPicker").then((m) => ({ default: m.MapPicker })),

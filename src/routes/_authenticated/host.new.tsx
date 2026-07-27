@@ -17,6 +17,7 @@ import {
   type ListingQuota,
 } from "@/lib/spaces";
 import { SpacePhoto } from "@/components/SpacePhoto";
+import { MapFrame } from "@/components/MapFrame";
 
 // Leaflet touches window at import time — lazy-load to keep it out of SSR.
 const MapPicker = lazy(() =>
@@ -37,6 +38,7 @@ function NewSpacePage() {
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [mapKey, setMapKey] = useState(0);
   const [pricePerHour, setPricePerHour] = useState("5");
   const [pricePerDay, setPricePerDay] = useState("");
   const [vehicles, setVehicles] = useState<string[]>(["car"]);
