@@ -99,7 +99,7 @@ export async function adminProcessPayout(
   const { error } = await supabase.rpc("admin_process_payout", {
     p_payout_id: payoutId,
     p_action: action,
-    p_notes: notes ?? null,
+    p_notes: notes ?? undefined,
   });
   if (error) throw error;
 }
