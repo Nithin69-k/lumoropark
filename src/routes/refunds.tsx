@@ -28,7 +28,7 @@ function RefundPolicyPage() {
     <LegalPage
       title="Refund & Cancellation Policy"
       updated="27 July 2026"
-      intro="This policy explains when a booking can be cancelled, when money is returned, and how to raise a dispute. It applies to all parking bookings and subscriptions purchased on LUMORO X PARK."
+      intro="This policy explains when a booking can be cancelled, when money is returned, and how to raise a dispute. It applies to all parking bookings and subscriptions purchased on LUMORO X PARK, operated by Parking Space Management."
     >
       <LegalSection heading="1. Host-controlled cancellations">
         <p>
