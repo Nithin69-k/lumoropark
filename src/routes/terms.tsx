@@ -28,14 +28,21 @@ function TermsPage() {
     <LegalPage
       title="Terms of Service"
       updated="27 July 2026"
-      intro="These terms form an agreement between you and LUMORO X PARK. By creating an account, listing a space, or booking a space you agree to be bound by them."
+      intro="These terms form an agreement between you and Parking Space Management, the legal entity that owns and operates the LUMORO X PARK platform. By creating an account, listing a space, or booking a space you agree to be bound by them."
     >
-      <LegalSection heading="1. Nature of the platform">
+      <LegalSection heading="1. Who you are contracting with">
+        <p>
+          The LUMORO X PARK platform is owned and operated by <strong>Parking Space Management</strong> (&quot;we&quot;,
+          &quot;us&quot;, the &quot;Company&quot;), trading as LUMORO X PARK. Parking Space Management is the seller
+          and the party you contract with when you use this service. Any reference to LUMORO X PARK in these terms
+          means Parking Space Management.
+        </p>
         <p>
           LUMORO X PARK is an online peer-to-peer marketplace connecting independent space owners ("Hosts") with
-          drivers looking for parking ("Drivers"). LUMORO X PARK does not own, operate, manage, or maintain any
+          drivers looking for parking ("Drivers"). Parking Space Management does not own, operate, manage, or maintain any
           physical parking space and holds no liability for occurrences on physical properties.
         </p>
+
         <p>
           By continuing to use the service you accept these terms. If you use the service on behalf of an
           organisation, you confirm you have authority to bind that organisation; otherwise you confirm you are
