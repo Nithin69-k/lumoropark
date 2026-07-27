@@ -24,8 +24,12 @@ export function PerfOverlay() {
   useEffect(() => {
     if (!enabled) return;
     setEvents(getPerfEvents());
-    return onPerfEvent(() => setEvents(getPerfEvents()));
+    const off = onPerfEvent(() => setEvents(getPerfEvents()));
+    return () => {
+      off();
+    };
   }, [enabled]);
+
 
   if (!enabled) return null;
 
