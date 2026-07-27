@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
 const searchSchema = z.object({
-  mode: z.enum(["signin", "signup"]).catch("signin"),
+  mode: z.enum(["signin", "signup", "forgot"]).catch("signin"),
   next: z.string().optional(),
 });
 
@@ -23,11 +23,14 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { mode: initialMode, next } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   // Only same-origin relative paths are allowed as `next` targets.
   const safeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : null;
@@ -42,32 +45,103 @@ function AuthPage() {
   }, [navigate, safeNext]);
 
 
-  async function handleEmail(e: React.FormEvent) {
-    e.preventDefault();
+  /** Transient failures (offline, DNS, 5xx) are worth retrying; bad credentials are not. */
+  function isTransient(err: unknown) {
+    const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+    const status = (err as { status?: number })?.status;
+    if (typeof status === "number" && status >= 500) return true;
+    return (
+      msg.includes("failed to fetch") ||
+      msg.includes("load failed") ||
+      msg.includes("network") ||
+      msg.includes("timeout") ||
+      msg.includes("temporarily") ||
+      msg.includes("upstream")
+    );
+  }
+
+  /** Runs `fn`, retrying transient failures up to 3 attempts with backoff. */
+  async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+    const delays = [400, 1200];
+    for (let i = 0; ; i++) {
+      try {
+        setAttempt(i + 1);
+        return await fn();
+      } catch (err) {
+        if (i >= delays.length || !isTransient(err)) throw err;
+        toast.message(`Connection problem — retrying (${i + 2}/${delays.length + 1})…`);
+        await new Promise((r) => setTimeout(r, delays[i]));
+      }
+    }
+  }
+
+  async function sendReset() {
+    if (!email) {
+      toast.error("Enter your email first");
+      return;
+    }
     setBusy(true);
+    setLastError(null);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: safeNext ? window.location.origin + safeNext : window.location.origin,
-            data: { full_name: fullName },
-          },
+      await withRetry(async () => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/reset-password",
         });
         if (error) throw error;
+      });
+      setResetSent(true);
+      toast.success("Password reset link sent — check your inbox.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not send the reset email";
+      setLastError(message);
+      toast.error(message);
+    } finally {
+      setBusy(false);
+      setAttempt(0);
+    }
+  }
+
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (mode === "forgot") {
+      await sendReset();
+      return;
+    }
+    setBusy(true);
+    setLastError(null);
+    try {
+      if (mode === "signup") {
+        await withRetry(async () => {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: safeNext ? window.location.origin + safeNext : window.location.origin,
+              data: { full_name: fullName },
+            },
+          });
+          if (error) throw error;
+        });
         toast.success("Account created — you're in!");
         navigate({ to: safeNext ?? "/onboarding", replace: true });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        await withRetry(async () => {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        });
         toast.success("Welcome back");
         navigate({ to: safeNext ?? "/profile", replace: true });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      const message = /invalid login credentials/i.test(raw)
+        ? "That email and password don't match. Check them, or reset your password."
+        : raw;
+      setLastError(message);
+      toast.error(message);
     } finally {
       setBusy(false);
+      setAttempt(0);
     }
   }
 
