@@ -136,6 +136,30 @@ function Landing() {
           ))}
           </div>
         </section>
+
+        <section className="mt-20">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-card md:p-8">
+            <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground">
+                  <Truck className="h-3.5 w-3.5" />
+                  Specialized vehicle storage
+                </div>
+                <h2 className="mt-4 text-2xl font-bold tracking-tight md:text-3xl">
+                  Have an RV, camper, or boat?
+                </h2>
+                <p className="mt-2 text-muted-foreground">
+                  Oversized vehicles need more than a standard parking spot. Learn how to
+                  list RV parking and storage on LumoroX Park and capture high-intent
+                  renters looking for space near them.
+                </p>
+              </div>
+              <Button asChild size="lg">
+                <Link to="/guides/rv-parking">Read the RV guide</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
       </main>
 
     </div>
