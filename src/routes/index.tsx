@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, ShieldCheck, Zap, QrCode } from "lucide-react";
+import { MapPin, ShieldCheck, Zap, QrCode, Truck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/BrandLogo";
