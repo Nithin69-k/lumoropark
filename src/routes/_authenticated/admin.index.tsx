@@ -38,7 +38,7 @@ import {
 
 
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   beforeLoad: async ({ context }) => {
     const { user } = context as { user: { id: string } };
     const ok = await isAdmin(user.id).catch(() => false);
