@@ -282,7 +282,7 @@ function NewSpacePage() {
             <Button asChild variant="ghost">
               <Link to="/host">Cancel</Link>
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || atCap}>
               {saving ? "Publishing…" : "Publish listing"}
             </Button>
           </div>
