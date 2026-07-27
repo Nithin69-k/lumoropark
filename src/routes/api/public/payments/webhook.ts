@@ -99,12 +99,12 @@ async function handleSubscriptionPastDue(data: any, env: PaddleEnv) {
 
   const userId = rows?.[0]?.user_id;
   if (!userId) return;
-  await getSupabase().rpc("notify_user", {
-    p_user_id: userId,
-    p_kind: "payment",
-    p_title: "Host Pro payment failed",
-    p_body: "We couldn't charge your card. Update your payment method to keep your Pro benefits.",
-    p_link: "/pricing",
+  await getSupabase().from("notifications").insert({
+    user_id: userId,
+    kind: "payment",
+    title: "Host Pro payment failed",
+    body: "We couldn't charge your card. Update your payment method to keep your Pro benefits.",
+    link: "/pricing",
   });
 }
 
@@ -122,12 +122,12 @@ async function handleAdjustmentCreated(data: any) {
 async function handleTransactionPaymentFailed(data: any) {
   const userId = data.customData?.userId;
   if (!userId) return;
-  await getSupabase().rpc("notify_user", {
-    p_user_id: userId,
-    p_kind: "payment",
-    p_title: "Payment failed",
-    p_body: "Your card was declined. Your reservation is not confirmed until payment succeeds.",
-    p_link: "/bookings",
+  await getSupabase().from("notifications").insert({
+    user_id: userId,
+    kind: "payment",
+    title: "Payment failed",
+    body: "Your card was declined. Your reservation is not confirmed until payment succeeds.",
+    link: "/bookings",
   });
 }
 
