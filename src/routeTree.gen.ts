@@ -31,6 +31,8 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMessagesBookingIdRouteImport } from './routes/_authenticated/messages.$bookingId'
 import { Route as AuthenticatedHostScanRouteImport } from './routes/_authenticated/host.scan'
 import { Route as AuthenticatedHostNewRouteImport } from './routes/_authenticated/host.new'
+import { Route as AuthenticatedHostEarningsRouteImport } from './routes/_authenticated/host.earnings'
+import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicRazorpayVerifyPaymentRouteImport } from './routes/api/public/razorpay.verify-payment'
@@ -151,6 +153,18 @@ const AuthenticatedHostNewRoute = AuthenticatedHostNewRouteImport.update({
   path: '/host/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedHostEarningsRoute =
+  AuthenticatedHostEarningsRouteImport.update({
+    id: '/host/earnings',
+    path: '/host/earnings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPayoutsRoute =
+  AuthenticatedAdminPayoutsRouteImport.update({
+    id: '/admin/payouts',
+    path: '/admin/payouts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -199,6 +213,8 @@ export interface FileRoutesByFullPath {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
@@ -227,6 +243,8 @@ export interface FileRoutesByTo {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/host/new': typeof AuthenticatedHostNewRoute
   '/host/scan': typeof AuthenticatedHostScanRoute
   '/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
@@ -257,6 +275,8 @@ export interface FileRoutesById {
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
+  '/_authenticated/host/earnings': typeof AuthenticatedHostEarningsRoute
   '/_authenticated/host/new': typeof AuthenticatedHostNewRoute
   '/_authenticated/host/scan': typeof AuthenticatedHostScanRoute
   '/_authenticated/messages/$bookingId': typeof AuthenticatedMessagesBookingIdRoute
@@ -287,6 +307,8 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/payouts'
+    | '/host/earnings'
     | '/host/new'
     | '/host/scan'
     | '/messages/$bookingId'
@@ -315,6 +337,8 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/admin/payouts'
+    | '/host/earnings'
     | '/host/new'
     | '/host/scan'
     | '/messages/$bookingId'
@@ -344,6 +368,8 @@ export interface FileRouteTypes {
     | '/space/$id'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/admin/payouts'
+    | '/_authenticated/host/earnings'
     | '/_authenticated/host/new'
     | '/_authenticated/host/scan'
     | '/_authenticated/messages/$bookingId'
@@ -529,6 +555,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHostNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/host/earnings': {
+      id: '/_authenticated/host/earnings'
+      path: '/host/earnings'
+      fullPath: '/host/earnings'
+      preLoaderRoute: typeof AuthenticatedHostEarningsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/payouts': {
+      id: '/_authenticated/admin/payouts'
+      path: '/admin/payouts'
+      fullPath: '/admin/payouts'
+      preLoaderRoute: typeof AuthenticatedAdminPayoutsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -574,6 +614,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
+  AuthenticatedHostEarningsRoute: typeof AuthenticatedHostEarningsRoute
   AuthenticatedHostNewRoute: typeof AuthenticatedHostNewRoute
   AuthenticatedHostScanRoute: typeof AuthenticatedHostScanRoute
   AuthenticatedMessagesBookingIdRoute: typeof AuthenticatedMessagesBookingIdRoute
@@ -589,6 +631,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
+  AuthenticatedHostEarningsRoute: AuthenticatedHostEarningsRoute,
   AuthenticatedHostNewRoute: AuthenticatedHostNewRoute,
   AuthenticatedHostScanRoute: AuthenticatedHostScanRoute,
   AuthenticatedMessagesBookingIdRoute: AuthenticatedMessagesBookingIdRoute,
