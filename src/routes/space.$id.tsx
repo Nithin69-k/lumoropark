@@ -277,13 +277,16 @@ function SpacePage() {
               </p>
             </div>
 
-            <div className="mt-6">
-              <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                  <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
-                </Suspense>
-              </ClientOnly>
-            </div>
+            {typeof detail.lat === "number" && typeof detail.lng === "number" ? (
+              <div className="mt-6">
+                <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
+                  <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
+                    <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
+                  </Suspense>
+                </ClientOnly>
+              </div>
+            ) : null}
+
           </div>
 
           {/* Booking card */}
