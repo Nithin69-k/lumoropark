@@ -89,6 +89,48 @@ async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
     .eq("environment", env);
 }
 
+async function handleSubscriptionPastDue(data: any, env: PaddleEnv) {
+  const { data: rows } = await getSupabase()
+    .from("subscriptions")
+    .update({ status: "past_due", updated_at: new Date().toISOString() })
+    .eq("paddle_subscription_id", data.id)
+    .eq("environment", env)
+    .select("user_id");
+
+  const userId = rows?.[0]?.user_id;
+  if (!userId) return;
+  await getSupabase().rpc("notify_user", {
+    p_user_id: userId,
+    p_kind: "payment",
+    p_title: "Host Pro payment failed",
+    p_body: "We couldn't charge your card. Update your payment method to keep your Pro benefits.",
+    p_link: "/pricing",
+  });
+}
+
+/** A refund/credit was created on a transaction — reconcile the booking. */
+async function handleAdjustmentCreated(data: any) {
+  if (data.action !== "refund" && data.action !== "credit") return;
+  const transactionId = data.transactionId ?? data.transaction_id;
+  if (!transactionId) return;
+  const { error } = await getSupabase().rpc("mark_booking_refunded_by_transaction", {
+    p_transaction_id: transactionId,
+  });
+  if (error) throw new Error(error.message);
+}
+
+async function handleTransactionPaymentFailed(data: any) {
+  const userId = data.customData?.userId;
+  if (!userId) return;
+  await getSupabase().rpc("notify_user", {
+    p_user_id: userId,
+    p_kind: "payment",
+    p_title: "Payment failed",
+    p_body: "Your card was declined. Your reservation is not confirmed until payment succeeds.",
+    p_link: "/bookings",
+  });
+}
+
 async function handleWebhook(req: Request, env: PaddleEnv) {
   const event = await verifyWebhook(req, env);
 
@@ -96,11 +138,20 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
     case EventName.TransactionCompleted:
       await handleTransactionCompleted(event.data);
       break;
+    case EventName.TransactionPaymentFailed:
+      await handleTransactionPaymentFailed(event.data);
+      break;
+    case EventName.AdjustmentCreated:
+      await handleAdjustmentCreated(event.data);
+      break;
     case EventName.SubscriptionCreated:
       await handleSubscriptionCreated(event.data, env);
       break;
     case EventName.SubscriptionUpdated:
       await handleSubscriptionUpdated(event.data, env);
+      break;
+    case EventName.SubscriptionPastDue:
+      await handleSubscriptionPastDue(event.data, env);
       break;
     case EventName.SubscriptionCanceled:
       await handleSubscriptionCanceled(event.data, env);
@@ -109,6 +160,7 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
       console.log("Unhandled event:", event.eventType);
   }
 }
+
 
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
