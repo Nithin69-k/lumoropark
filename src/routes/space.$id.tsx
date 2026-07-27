@@ -1,6 +1,6 @@
 import { policyLabel } from "@/lib/spaces";
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { lazy, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, ShieldCheck, Zap, Camera, Home, Loader2 } from "lucide-react";
 
@@ -279,11 +279,9 @@ function SpacePage() {
 
             {typeof detail.lat === "number" && typeof detail.lng === "number" ? (
               <div className="mt-6">
-                <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                  <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                    <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
-                  </Suspense>
-                </ClientOnly>
+                <MapFrame height={260} retryKey={mapKey} onRetry={() => setMapKey((k) => k + 1)}>
+                  <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
+                </MapFrame>
               </div>
             ) : null}
 
