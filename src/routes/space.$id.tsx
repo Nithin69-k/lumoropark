@@ -86,6 +86,8 @@ function SpacePage() {
   const [start, setStart] = useState(toLocalInput(in1h));
   const [end, setEnd] = useState(toLocalInput(in3h));
   const [booking, setBooking] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
