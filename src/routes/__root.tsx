@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { SiteFooter } from "@/components/SiteFooter";
 
 function NotFoundComponent() {
   return (
@@ -160,7 +161,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        <SiteFooter />
+      </div>
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
