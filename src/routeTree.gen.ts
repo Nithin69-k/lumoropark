@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PayRouteImport } from './routes/pay'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -48,11 +47,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PayRoute = PayRouteImport.update({
-  id: '/pay',
-  path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -206,7 +200,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
-  '/pay': typeof PayRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -237,7 +230,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
-  '/pay': typeof PayRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -270,7 +262,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/mcp': typeof McpRoute
-  '/pay': typeof PayRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -303,7 +294,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/mcp'
-    | '/pay'
     | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
@@ -334,7 +324,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/mcp'
-    | '/pay'
     | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
@@ -366,7 +355,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/mcp'
-    | '/pay'
     | '/pricing'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
@@ -399,7 +387,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   McpRoute: typeof McpRoute
-  PayRoute: typeof PayRoute
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -426,13 +413,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pay': {
-      id: '/pay'
-      path: '/pay'
-      fullPath: '/pay'
-      preLoaderRoute: typeof PayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -670,7 +650,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   McpRoute: McpRoute,
-  PayRoute: PayRoute,
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

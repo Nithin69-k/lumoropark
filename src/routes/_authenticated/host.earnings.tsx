@@ -16,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { MIN_PAYOUT_AMOUNT } from "@/lib/paddle";
+import { useSubscription } from "@/hooks/useSubscription";
+import { getHostEarningsAnalytics } from "@/lib/earnings";
 import {
   getMyWallet,
   listMyPayouts,
@@ -56,6 +58,7 @@ function EarningsPage() {
   const { data: payouts } = useQuery({ queryKey: ["my-payouts"], queryFn: listMyPayouts });
 
   const available = wallet?.available_balance ?? 0;
+  const { isPro } = useSubscription();
 
   return (
     <div className="min-h-screen bg-gradient-surface">
@@ -79,7 +82,7 @@ function EarningsPage() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-5 py-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Stat icon={<Wallet className="h-4 w-4" />} label="Available balance" value={money(available)} highlight />
           <Stat icon={<Clock className="h-4 w-4" />} label="Clearing (24h hold)" value={money(wallet?.pending_clearance ?? 0)} />
           <Stat icon={<Clock className="h-4 w-4" />} label="Pending payout" value={money(wallet?.pending_payout ?? 0)} />
@@ -88,11 +91,14 @@ function EarningsPage() {
         </div>
 
         <p className="rounded-xl border border-border bg-card p-4 text-xs text-muted-foreground">
-          You keep the space price minus a 10% platform commission. Drivers also pay a $1
-          reservation fee that goes to the platform. Balances are paid out automatically on the
-          1st of each month once you have at least {money(MIN_PAYOUT_AMOUNT)} available — anything
-          below that rolls over.
+          You keep the space price minus a {isPro ? "5% Host Pro" : "10% platform"} commission.
+          Drivers also pay a $1 reservation fee that goes to the platform. Earnings sit in
+          clearing for 24 hours after each stay ends so disputes can be raised, then move to your
+          available balance. Balances are paid out automatically on the 1st of each month once you
+          have at least {money(MIN_PAYOUT_AMOUNT)} available — anything below that rolls over.
         </p>
+
+        <EarningsAnalytics isPro={isPro} />
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <h2 className="font-semibold">Payout requests</h2>
@@ -270,5 +276,57 @@ function PayoutDialog({ available, onDone }: { available: number; onDone: () => 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function EarningsAnalytics({ isPro }: { isPro: boolean }) {
+  const { data } = useQuery({
+    queryKey: ["host-earnings-analytics"],
+    queryFn: getHostEarningsAnalytics,
+    enabled: isPro,
+  });
+
+  if (!isPro) {
+    return (
+      <section className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
+        <h2 className="font-semibold">Earnings analytics</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          See month-by-month gross and net earnings, plus unlimited listings, featured placement
+          and a 5% commission with Host Pro.
+        </p>
+        <Button asChild size="sm" className="mt-3">
+          <Link to="/pricing">Upgrade to Host Pro</Link>
+        </Button>
+      </section>
+    );
+  }
+
+  const max = Math.max(1, ...(data ?? []).map((d) => d.net));
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <h2 className="font-semibold">Earnings analytics</h2>
+      {!data || data.length === 0 ? (
+        <p className="mt-2 text-sm text-muted-foreground">No paid bookings in the last 12 months yet.</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {data.map((d) => (
+            <li key={d.month} className="flex items-center gap-3 text-xs">
+              <span className="w-16 shrink-0 text-muted-foreground">
+                {new Date(d.month).toLocaleDateString(undefined, { month: "short", year: "2-digit" })}
+              </span>
+              <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                <span
+                  className="block h-full rounded-full bg-gradient-brand"
+                  style={{ width: `${Math.round((d.net / max) * 100)}%` }}
+                />
+              </span>
+              <span className="w-24 shrink-0 text-right font-medium">{money(d.net)}</span>
+              <span className="w-16 shrink-0 text-right text-muted-foreground">{d.bookings} bkg</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
