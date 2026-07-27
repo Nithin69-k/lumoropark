@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Shield, Star, Pencil, LogOut, Car, Home, Bell, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
