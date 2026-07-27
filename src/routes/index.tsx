@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, Zap, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
@@ -59,9 +60,8 @@ function Landing() {
     <div className="min-h-screen bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-            <span className="inline-block h-6 w-6 rounded-md bg-gradient-brand shadow-glow" />
-            LumoroX Park
+          <Link to="/" className="flex items-center" aria-label="LumoroX Park home">
+            <BrandLogo className="h-9 sm:h-10" />
           </Link>
           <nav className="flex items-center gap-2">
             {signedIn ? (

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,9 +96,8 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-surface px-4 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center gap-2 font-display text-lg font-bold">
-          <span className="inline-block h-6 w-6 rounded-md bg-gradient-brand shadow-glow" />
-          LumoroX Park
+        <Link to="/" className="mb-6 flex items-center" aria-label="LumoroX Park home">
+          <BrandLogo className="h-10" />
         </Link>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-2xl font-bold">

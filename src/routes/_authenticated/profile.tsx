@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Shield, Star, Pencil, LogOut, Car, Home, Bell, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -83,9 +84,8 @@ function ProfilePage() {
     <div className="min-h-screen bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-            <span className="inline-block h-6 w-6 rounded-md bg-gradient-brand shadow-glow" />
-            LumoroX Park
+          <Link to="/" className="flex items-center" aria-label="LumoroX Park home">
+            <BrandLogo className="h-9" />
           </Link>
           <div className="flex items-center gap-1">
             <Button asChild variant="ghost" size="icon" className="relative">
