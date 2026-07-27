@@ -11,6 +11,12 @@
     "lint": "eslint .",
     "format": "prettier --write ."
   },
+  "overrides": {
+    "js-yaml": "^4.3.0"
+  },
+  "resolutions": {
+    "js-yaml": "^4.3.0"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
