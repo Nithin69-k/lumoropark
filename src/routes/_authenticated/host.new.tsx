@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
@@ -174,9 +174,11 @@ function NewSpacePage() {
             </div>
             <div>
               <Label className="mb-2 block">Pin on map</Label>
-              <Suspense fallback={<div className="h-80 animate-pulse rounded-xl bg-muted" />}>
-                <MapPicker value={pos} onChange={setPos} height={320} />
-              </Suspense>
+              <ClientOnly fallback={<div className="h-80 animate-pulse rounded-xl bg-muted" />}>
+                <Suspense fallback={<div className="h-80 animate-pulse rounded-xl bg-muted" />}>
+                  <MapPicker value={pos} onChange={setPos} height={320} />
+                </Suspense>
+              </ClientOnly>
               <p className="mt-2 text-xs text-muted-foreground">
                 <MapPin className="mr-1 inline h-3 w-3" />
                 {pos ? `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}` : "Click the map or drag the marker to set the exact spot."}

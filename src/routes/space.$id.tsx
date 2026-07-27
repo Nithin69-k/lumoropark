@@ -1,5 +1,5 @@
 import { policyLabel } from "@/lib/spaces";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, ShieldCheck, Zap, Camera, Home, Loader2 } from "lucide-react";
@@ -278,9 +278,11 @@ function SpacePage() {
             </div>
 
             <div className="mt-6">
-              <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
-              </Suspense>
+              <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
+                <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
+                  <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
+                </Suspense>
+              </ClientOnly>
             </div>
           </div>
 
