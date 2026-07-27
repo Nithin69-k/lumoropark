@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { QrCodeImage } from "@/components/QrCodeImage";
 import { PayBookingButton } from "@/components/PayBookingButton";
+import { CancelBookingButton } from "@/components/CancelBookingButton";
+import { PolicyBadge } from "@/components/PolicyBadge";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { listMyBookings, type MyBooking } from "@/lib/search";
 import { checkoutBooking, submitReview, hasReviewedBooking } from "@/lib/lifecycle";
@@ -153,6 +155,7 @@ function BookingCard({
         <div className="text-right">
           <div className="text-lg font-bold">${b.total_price.toFixed(2)}</div>
           <StatusBadge status={b.status} payment={b.payment_status} />
+          <div className="mt-2"><PolicyBadge policy={b.cancellation_policy} /></div>
         </div>
       </div>
 
@@ -198,6 +201,9 @@ function BookingCard({
             <MessageSquare className="mr-1 h-4 w-4" /> Message
           </Link>
         </Button>
+        {(b.status === "pending" || b.status === "confirmed") && (
+          <CancelBookingButton bookingId={b.id} onCancelled={onChanged} />
+        )}
         <ReportDialog bookingId={b.id} />
       </div>
     </li>
@@ -401,10 +407,12 @@ function StatusBadge({ status, payment }: { status: string; payment: string }) {
   const label =
     status === "active" ? "Active" :
     status === "completed" ? "Completed" :
+    status === "cancelled" ? (payment === "refunded" ? "Cancelled · refunded" : payment === "refund_pending" ? "Cancelled · refund pending" : "Cancelled") :
     payment === "pending" ? "Reserved" : status;
   const tone =
     status === "active" ? "bg-success/10 text-success" :
     status === "completed" ? "bg-muted text-muted-foreground" :
+    status === "cancelled" ? "bg-destructive/10 text-destructive" :
     "bg-warning/10 text-warning";
   return <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${tone}`}>{label}</span>;
 }
