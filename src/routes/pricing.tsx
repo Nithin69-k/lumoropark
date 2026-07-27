@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { useSubscription } from "@/hooks/useSubscription";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { SiteFooter } from "@/components/SiteFooter";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -169,6 +171,9 @@ function PricingPage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
+
   );
 }
