@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, Zap, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
