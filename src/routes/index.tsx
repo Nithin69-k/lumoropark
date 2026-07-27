@@ -69,6 +69,10 @@ function Landing() {
               <Link to="/pricing">Pricing</Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
+              <Link to="/help">Help</Link>
+            </Button>
+
+            <Button asChild variant="ghost" size="sm">
               <Link to="/guides/rv-parking">RV guide</Link>
             </Button>
             {signedIn ? (
