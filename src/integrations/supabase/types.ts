@@ -84,17 +84,24 @@ export type Database = {
       bookings: {
         Row: {
           amount_charged: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           checked_in_at: string | null
           checked_out_at: string | null
           created_at: string
+          earnings_clear_at: string | null
+          earnings_released_at: string | null
           end_time: string
           host_earning: number
           host_id: string
           id: string
+          paddle_refund_id: string | null
           paddle_transaction_id: string | null
           payment_status: string
           platform_fee: number
           qr_checkin_code: string | null
+          refund_amount: number
           renter_id: string
           reservation_fee: number
           space_id: string
@@ -106,17 +113,24 @@ export type Database = {
         }
         Insert: {
           amount_charged?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           checked_in_at?: string | null
           checked_out_at?: string | null
           created_at?: string
+          earnings_clear_at?: string | null
+          earnings_released_at?: string | null
           end_time: string
           host_earning?: number
           host_id: string
           id?: string
+          paddle_refund_id?: string | null
           paddle_transaction_id?: string | null
           payment_status?: string
           platform_fee?: number
           qr_checkin_code?: string | null
+          refund_amount?: number
           renter_id: string
           reservation_fee?: number
           space_id: string
@@ -128,17 +142,24 @@ export type Database = {
         }
         Update: {
           amount_charged?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           checked_in_at?: string | null
           checked_out_at?: string | null
           created_at?: string
+          earnings_clear_at?: string | null
+          earnings_released_at?: string | null
           end_time?: string
           host_earning?: number
           host_id?: string
           id?: string
+          paddle_refund_id?: string | null
           paddle_transaction_id?: string | null
           payment_status?: string
           platform_fee?: number
           qr_checkin_code?: string | null
+          refund_amount?: number
           renter_id?: string
           reservation_fee?: number
           space_id?: string
@@ -271,6 +292,7 @@ export type Database = {
           created_at: string
           host_id: string
           lifetime_earnings: number
+          pending_clearance: number
           pending_payout: number
           total_paid_out: number
           updated_at: string
@@ -280,6 +302,7 @@ export type Database = {
           created_at?: string
           host_id: string
           lifetime_earnings?: number
+          pending_clearance?: number
           pending_payout?: number
           total_paid_out?: number
           updated_at?: string
@@ -289,6 +312,7 @@ export type Database = {
           created_at?: string
           host_id?: string
           lifetime_earnings?: number
+          pending_clearance?: number
           pending_payout?: number
           total_paid_out?: number
           updated_at?: string
@@ -385,6 +409,7 @@ export type Database = {
       parking_spaces: {
         Row: {
           address: string
+          cancellation_policy: string
           created_at: string
           description: string | null
           has_camera: boolean
@@ -406,6 +431,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          cancellation_policy?: string
           created_at?: string
           description?: string | null
           has_camera?: boolean
@@ -427,6 +453,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          cancellation_policy?: string
           created_at?: string
           description?: string | null
           has_camera?: boolean
@@ -1017,17 +1044,24 @@ export type Database = {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {
           amount_charged: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           checked_in_at: string | null
           checked_out_at: string | null
           created_at: string
+          earnings_clear_at: string | null
+          earnings_released_at: string | null
           end_time: string
           host_earning: number
           host_id: string
           id: string
+          paddle_refund_id: string | null
           paddle_transaction_id: string | null
           payment_status: string
           platform_fee: number
           qr_checkin_code: string | null
+          refund_amount: number
           renter_id: string
           reservation_fee: number
           space_id: string
@@ -1044,6 +1078,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cancellation_cutoff_hours: { Args: { _policy: string }; Returns: number }
       checkin_booking: {
         Args: { p_qr_code: string }
         Returns: {
@@ -1053,25 +1088,46 @@ export type Database = {
         }[]
       }
       checkout_booking: { Args: { p_booking_id: string }; Returns: undefined }
-      create_parking_space: {
-        Args: {
-          p_address: string
-          p_description: string
-          p_has_camera: boolean
-          p_has_ev_charging: boolean
-          p_has_sensor: boolean
-          p_is_covered: boolean
-          p_is_gated: boolean
-          p_lat: number
-          p_lng: number
-          p_photos: string[]
-          p_price_per_day: number
-          p_price_per_hour: number
-          p_title: string
-          p_vehicle_types: string[]
-        }
-        Returns: string
-      }
+      create_parking_space:
+        | {
+            Args: {
+              p_address: string
+              p_description: string
+              p_has_camera: boolean
+              p_has_ev_charging: boolean
+              p_has_sensor: boolean
+              p_is_covered: boolean
+              p_is_gated: boolean
+              p_lat: number
+              p_lng: number
+              p_photos: string[]
+              p_price_per_day: number
+              p_price_per_hour: number
+              p_title: string
+              p_vehicle_types: string[]
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_address: string
+              p_cancellation_policy?: string
+              p_description: string
+              p_has_camera: boolean
+              p_has_ev_charging: boolean
+              p_has_sensor: boolean
+              p_is_covered: boolean
+              p_is_gated: boolean
+              p_lat: number
+              p_lng: number
+              p_photos: string[]
+              p_price_per_day: number
+              p_price_per_hour: number
+              p_title: string
+              p_vehicle_types: string[]
+            }
+            Returns: string
+          }
       create_pending_booking: {
         Args: { p_end: string; p_space_id: string; p_start: string }
         Returns: string
@@ -1217,19 +1273,39 @@ export type Database = {
           total: number
         }[]
       }
+      get_cancellation_quote: {
+        Args: { p_booking_id: string }
+        Returns: {
+          cutoff_hours: number
+          hours_until_start: number
+          policy: string
+          refund_amount: number
+          refundable: boolean
+        }[]
+      }
       get_my_wallet: {
         Args: never
         Returns: {
           available_balance: number
           lifetime_earnings: number
+          pending_clearance: number
           pending_payout: number
           total_paid_out: number
+        }[]
+      }
+      get_refund_job: {
+        Args: { p_booking_id: string }
+        Returns: {
+          payment_status: string
+          refund_amount: number
+          transaction_id: string
         }[]
       }
       get_space_detail: {
         Args: { p_id: string }
         Returns: {
           address: string
+          cancellation_policy: string
           description: string
           has_camera: boolean
           has_ev_charging: boolean
@@ -1240,6 +1316,7 @@ export type Database = {
           host_trust_score: number
           id: string
           is_covered: boolean
+          is_featured: boolean
           is_gated: boolean
           lat: number
           live_occupancy_status: string
@@ -1270,10 +1347,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      host_commission_rate: { Args: { _host_id: string }; Returns: number }
+      host_earnings_analytics: {
+        Args: never
+        Returns: {
+          bookings: number
+          gross: number
+          month: string
+          net: number
+        }[]
+      }
       is_booking_party: {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
+      is_host_pro: { Args: { _user_id: string }; Returns: boolean }
       list_dispute_events: {
         Args: { p_dispute_id: string }
         Returns: {
@@ -1328,11 +1416,28 @@ export type Database = {
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_booking_refunded: {
+        Args: { p_booking_id: string; p_refund_id?: string }
+        Returns: undefined
+      }
+      mark_booking_refunded_by_transaction: {
+        Args: { p_transaction_id: string }
+        Returns: undefined
+      }
       mark_notifications_read: { Args: never; Returns: undefined }
+      my_listing_quota: {
+        Args: never
+        Returns: {
+          is_pro: boolean
+          max_allowed: number
+          used: number
+        }[]
+      }
       nearby_spaces: {
         Args: { lat: number; lng: number; radius_km: number }
         Returns: {
           address: string
+          cancellation_policy: string
           created_at: string
           description: string | null
           has_camera: boolean
@@ -1403,6 +1508,7 @@ export type Database = {
         Args: { p_booking_id: string; p_reason: string }
         Returns: string
       }
+      release_cleared_earnings: { Args: never; Returns: number }
       request_payout: {
         Args: {
           p_account_holder: string
@@ -1433,12 +1539,14 @@ export type Database = {
         }
         Returns: {
           address: string
+          cancellation_policy: string
           distance_km: number
           has_camera: boolean
           has_ev_charging: boolean
           host_id: string
           id: string
           is_covered: boolean
+          is_featured: boolean
           is_gated: boolean
           lat: number
           live_occupancy_status: string
