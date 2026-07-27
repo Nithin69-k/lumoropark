@@ -9,8 +9,10 @@ export function SiteFooter() {
           <Link to="/pricing" className="transition-colors hover:text-foreground">
             Pricing
           </Link>
+          <Link to="/guides/rv-parking" className="transition-colors hover:text-foreground">
+            RV Parking Guide
+          </Link>
           <Link to="/terms" className="transition-colors hover:text-foreground">
-
             Terms of Service
           </Link>
           <Link to="/refunds" className="transition-colors hover:text-foreground">
