@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "smoke": "bun run scripts/smoke-test.ts"
   },
   "overrides": {
     "js-yaml": "^4.3.0",
