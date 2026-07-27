@@ -84,14 +84,14 @@ function AdminDashboard() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-5 py-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/profile"><ArrowLeft className="mr-1 h-4 w-4" />Profile</Link>
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3 sm:px-5 sm:py-4">
+          <Button asChild variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3">
+            <Link to="/profile"><ArrowLeft className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Profile</span></Link>
           </Button>
-          <h1 className="font-display text-lg font-bold flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" /> Admin
+          <h1 className="flex min-w-0 items-center gap-2 font-display text-base font-bold sm:text-lg">
+            <Shield className="h-5 w-5 shrink-0 text-primary" /> Admin
           </h1>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
             <Button asChild size="sm" variant="outline">
               <Link to="/admin/support">Support</Link>
             </Button>

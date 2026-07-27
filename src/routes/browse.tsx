@@ -110,20 +110,20 @@ function BrowsePage() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/"><ArrowLeft className="mr-1 h-4 w-4" />Home</Link>
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+            <Button asChild variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3">
+              <Link to="/"><ArrowLeft className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Home</span></Link>
             </Button>
-            <h1 className="font-display text-lg font-bold">Find a spot</h1>
+            <h1 className="truncate font-display text-base font-bold sm:text-lg">Find a spot</h1>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setShowFilters((v) => !v)}>
+          <Button size="sm" variant="outline" className="shrink-0" onClick={() => setShowFilters((v) => !v)}>
             <SlidersHorizontal className="mr-1 h-4 w-4" /> Filters
           </Button>
         </div>
         {showFilters && (
-          <div className="mx-auto max-w-6xl border-t border-border/60 px-5 py-4">
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+          <div className="mx-auto max-w-6xl border-t border-border/60 px-4 py-4 sm:px-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
               <FilterCheck label="Covered" checked={covered} onChange={setCovered} />
               <FilterCheck label="Gated" checked={gated} onChange={setGated} />
               <FilterCheck label="EV charging" checked={ev} onChange={setEv} />

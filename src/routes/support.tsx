@@ -103,14 +103,14 @@ function SupportPage() {
   return (
     <div className="flex min-h-full flex-col bg-background text-foreground">
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 sm:px-5 sm:py-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-w-0 items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to LUMORO X PARK
+            <ArrowLeft className="h-4 w-4 shrink-0" /> <span className="truncate">Back to LUMORO X PARK</span>
           </Link>
-          <Link to="/help" className="text-sm font-medium text-primary hover:underline">
+          <Link to="/help" className="shrink-0 text-sm font-medium text-primary hover:underline">
             Help Center
           </Link>
         </div>

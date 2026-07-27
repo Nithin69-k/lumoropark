@@ -102,11 +102,11 @@ function ProfilePage() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center" aria-label="LumoroX Park home">
-            <BrandLogo className="h-9" />
+        <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <Link to="/" className="flex min-w-0 items-center" aria-label="LumoroX Park home">
+            <BrandLogo className="h-8 sm:h-9" />
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <Button asChild variant="ghost" size="icon" className="relative">
               <Link to="/notifications" aria-label="Notifications">
                 <Bell className="h-4 w-4" />
@@ -120,8 +120,8 @@ function ProfilePage() {
             <Button asChild variant="ghost" size="icon" aria-label="Messages">
               <Link to="/messages"><MessageSquare className="h-4 w-4" /></Link>
             </Button>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            <Button variant="ghost" size="sm" className="px-2 sm:px-3" onClick={handleSignOut} aria-label="Sign out">
+              <LogOut className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Sign out</span>
             </Button>
           </div>
         </div>

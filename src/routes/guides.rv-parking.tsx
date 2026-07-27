@@ -105,20 +105,21 @@ function RVParkingGuide() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center" aria-label="LumoroX Park home">
-            <BrandLogo className="h-9 sm:h-10" />
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <Link to="/" className="flex min-w-0 items-center" aria-label="LumoroX Park home">
+            <BrandLogo className="h-8 sm:h-10" />
           </Link>
-          <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm">
+          <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/">Home</Link>
             </Button>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link to="/pricing">Pricing</Link>
             </Button>
             <Button asChild size="sm">
               <Link to="/auth" search={{ mode: "signup" }}>
-                List your RV space
+                <span className="hidden sm:inline">List your RV space</span>
+                <span className="sm:hidden">List space</span>
               </Link>
             </Button>
           </nav>
