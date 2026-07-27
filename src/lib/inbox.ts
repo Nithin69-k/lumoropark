@@ -79,13 +79,14 @@ export async function listMyThreads(): Promise<BookingThread[]> {
   if (!u.user) return [];
   const uid = u.user.id;
   // Bookings where I'm renter or host
+  // RLS already limits bookings to the ones I'm renter or host on.
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select("id, renter_id, space:parking_spaces!inner(id, title, host_id, host:profiles!parking_spaces_host_id_fkey(full_name)), renter:profiles!bookings_renter_id_fkey(full_name)")
-    .or(`renter_id.eq.${uid},space.host_id.eq.${uid}`)
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw error;
+
 
   const rows = (bookings ?? []) as unknown as Array<{
     id: string;

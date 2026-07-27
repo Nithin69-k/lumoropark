@@ -30,10 +30,11 @@ function ProfilePage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ["profile", user.id],
     queryFn: () => fetchMyProfile(user.id),
   });
+
 
   const { data: admin } = useQuery({
     queryKey: ["is-admin", user.id],
@@ -53,6 +54,23 @@ function ProfilePage() {
     navigate({ to: "/", replace: true });
   }
 
+  if (error || (!isLoading && !profile)) {
+    return (
+      <div className="min-h-full bg-gradient-surface px-4 py-16">
+        <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-6 text-center">
+          <h1 className="text-lg font-semibold">We couldn't load your profile</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {error instanceof Error ? error.message : "Your profile isn't available right now."}
+          </p>
+          <div className="mt-4 flex justify-center gap-2">
+            <Button size="sm" onClick={() => refetch()}>Try again</Button>
+            <Button size="sm" variant="outline" onClick={handleSignOut}>Sign out</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading || !profile) {
     return (
       <div className="min-h-full bg-gradient-surface px-4 py-12">
@@ -63,6 +81,7 @@ function ProfilePage() {
       </div>
     );
   }
+
 
   const initials = (profile.full_name ?? user.email ?? "?")
     .split(" ")
