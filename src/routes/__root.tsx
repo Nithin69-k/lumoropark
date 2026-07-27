@@ -14,6 +14,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteFooter } from "@/components/SiteFooter";
+import { PerfOverlay } from "@/components/PerfOverlay";
+import { initPerfMonitoring, startPerfTimer } from "@/lib/perf";
+
 
 function NotFoundComponent() {
   return (
@@ -159,6 +162,23 @@ function RootComponent() {
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  // Performance monitoring: web vitals + per-navigation timing.
+  useEffect(() => {
+    initPerfMonitoring();
+    let stop: ((extra?: Record<string, unknown>) => void) | null = null;
+    const offStart = router.subscribe("onBeforeNavigate", () => {
+      stop = startPerfTimer("route_change");
+    });
+    const offEnd = router.subscribe("onResolved", ({ toLocation }) => {
+      stop?.({ to: toLocation.pathname });
+      stop = null;
+    });
+    return () => {
+      offStart();
+      offEnd();
+    };
+  }, [router]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
@@ -168,6 +188,8 @@ function RootComponent() {
         <SiteFooter />
       </div>
       <Toaster richColors position="top-center" />
+      <PerfOverlay />
     </QueryClientProvider>
   );
 }
+

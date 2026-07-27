@@ -1,7 +1,7 @@
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { lazy, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MapPin, SlidersHorizontal, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, SlidersHorizontal, Loader2, ArrowLeft, Crosshair, AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SpacePhoto } from "@/components/SpacePhoto";
 import { searchSpaces, type SpaceResult } from "@/lib/search";
+import { MapFrame } from "@/components/MapFrame";
+import { markPerf, startPerfTimer } from "@/lib/perf";
 
 const BrowseMap = lazy(() =>
   import("@/components/BrowseMap").then((m) => ({ default: m.BrowseMap })),
@@ -34,6 +36,8 @@ function BrowsePage() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [mapKey, setMapKey] = useState(0);
 
   const [covered, setCovered] = useState(false);
   const [gated, setGated] = useState(false);
@@ -41,21 +45,43 @@ function BrowsePage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [radius, setRadius] = useState("10");
 
-  // geolocate
-  useEffect(() => {
-    if (!navigator.geolocation) {
+  // geolocate — failures are reported, never fatal: we keep the default centre.
+  const locate = useCallback((manual = false) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
       setLocating(false);
+      setGeoError("This browser can't share your location. Showing New York — pan the map to your area.");
       return;
     }
+    setLocating(true);
+    setGeoError(null);
+    const done = startPerfTimer("geolocation");
     navigator.geolocation.getCurrentPosition(
       (p) => {
+        done({ ok: true });
         setCenter({ lat: p.coords.latitude, lng: p.coords.longitude });
         setLocating(false);
+        if (manual) toast.success("Centred on your location");
       },
-      () => setLocating(false),
+      (err) => {
+        done({ ok: false, code: err.code });
+        markPerf("geolocation_error", { code: err.code, message: err.message });
+        setLocating(false);
+        const message =
+          err.code === err.PERMISSION_DENIED
+            ? "Location access is blocked, so we're showing New York. Allow location in your browser, or pan the map."
+            : err.code === err.TIMEOUT
+              ? "Getting your location timed out. Showing the last area — try again or pan the map."
+              : "We couldn't work out where you are. Showing New York — pan the map to your area.";
+        setGeoError(message);
+        if (manual) toast.error(message);
+      },
       { enableHighAccuracy: true, timeout: 6000 },
     );
   }, []);
+
+  useEffect(() => {
+    locate();
+  }, [locate]);
 
   // search on center or filters change (debounced)
   useEffect(() => {
@@ -120,8 +146,22 @@ function BrowsePage() {
             <span>
               {locating ? "Locating…" : loading ? "Searching…" : `${results.length} spots nearby`}
             </span>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            <div className="flex items-center gap-2">
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              <Button size="sm" variant="ghost" onClick={() => locate(true)} disabled={locating}>
+                <Crosshair className="mr-1 h-3.5 w-3.5" /> My location
+              </Button>
+            </div>
           </div>
+          {geoError && (
+            <div className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="flex-1">{geoError}</span>
+              <button className="font-medium text-primary hover:underline" onClick={() => locate(true)}>
+                Retry
+              </button>
+            </div>
+          )}
           {results.length === 0 && !loading && (
             <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
               No spots in this area yet. Try widening the radius or panning the map.
@@ -178,8 +218,7 @@ function BrowsePage() {
         </div>
 
         <div className="md:sticky md:top-4 md:self-start">
-          <ClientOnly fallback={<div className="h-[420px] animate-pulse rounded-2xl bg-muted" />}>
-          <Suspense fallback={<div className="h-[420px] animate-pulse rounded-2xl bg-muted" />}>
+          <MapFrame height={520} retryKey={mapKey} onRetry={() => setMapKey((k) => k + 1)}>
             <BrowseMap
               center={center}
               spaces={results}
@@ -188,8 +227,7 @@ function BrowsePage() {
               onCenterChange={setCenter}
               height={520}
             />
-          </Suspense>
-          </ClientOnly>
+          </MapFrame>
         </div>
       </main>
     </div>

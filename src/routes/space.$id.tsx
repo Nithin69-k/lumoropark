@@ -1,6 +1,6 @@
 import { policyLabel } from "@/lib/spaces";
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { lazy, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, MapPin, ShieldCheck, Zap, Camera, Home, Loader2 } from "lucide-react";
 
@@ -11,6 +11,7 @@ import { SpacePhoto } from "@/components/SpacePhoto";
 import { supabase } from "@/integrations/supabase/client";
 import { getSpaceDetail, createPendingBooking, type SpaceDetail } from "@/lib/search";
 import { trustBand } from "@/lib/profile";
+import { MapFrame } from "@/components/MapFrame";
 
 const MapPicker = lazy(() =>
   import("@/components/MapPicker").then((m) => ({ default: m.MapPicker })),
@@ -85,6 +86,8 @@ function SpacePage() {
   const [start, setStart] = useState(toLocalInput(in1h));
   const [end, setEnd] = useState(toLocalInput(in3h));
   const [booking, setBooking] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
@@ -279,11 +282,9 @@ function SpacePage() {
 
             {typeof detail.lat === "number" && typeof detail.lng === "number" ? (
               <div className="mt-6">
-                <ClientOnly fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                  <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-muted" />}>
-                    <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
-                  </Suspense>
-                </ClientOnly>
+                <MapFrame height={260} retryKey={mapKey} onRetry={() => setMapKey((k) => k + 1)}>
+                  <MapPicker value={{ lat: detail.lat, lng: detail.lng }} onChange={() => {}} height={260} />
+                </MapFrame>
               </div>
             ) : null}
 
