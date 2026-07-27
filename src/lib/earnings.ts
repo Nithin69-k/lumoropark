@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type Wallet = {
   lifetime_earnings: number;
   available_balance: number;
+  pending_clearance: number;
   pending_payout: number;
   total_paid_out: number;
 };
@@ -44,6 +45,7 @@ export async function getMyWallet(): Promise<Wallet> {
   return {
     lifetime_earnings: num(row?.lifetime_earnings),
     available_balance: num(row?.available_balance),
+    pending_clearance: num(row?.pending_clearance),
     pending_payout: num(row?.pending_payout),
     total_paid_out: num(row?.total_paid_out),
   };
@@ -102,4 +104,18 @@ export async function adminProcessPayout(
     p_notes: notes ?? undefined,
   });
   if (error) throw error;
+}
+
+export type EarningsPoint = { month: string; bookings: number; gross: number; net: number };
+
+/** Host Pro only — monthly earnings breakdown for the last 12 months. */
+export async function getHostEarningsAnalytics(): Promise<EarningsPoint[]> {
+  const { data, error } = await supabase.rpc("host_earnings_analytics");
+  if (error) throw error;
+  return ((data ?? []) as EarningsPoint[]).map((r) => ({
+    month: r.month,
+    bookings: num(r.bookings),
+    gross: num(r.gross),
+    net: num(r.net),
+  }));
 }

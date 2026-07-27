@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
@@ -29,17 +30,35 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const FREE = ["Up to 2 listings", "Standard search placement", "Wallet & monthly payouts"];
+const FREE = [
+  "Up to 2 listings",
+  "10% platform commission",
+  "Standard search placement",
+  "Wallet & monthly payouts",
+];
 const PRO = [
   "Unlimited listings",
-  "Featured placement in search",
+  "Reduced 5% platform commission",
+  "Featured placement in search + Pro badge",
   "Earnings analytics & demand insights",
   "Priority support",
 ];
 
 function PricingPage() {
   const { openCheckout, loading } = usePaddleCheckout();
-  const { isActive, subscription } = useSubscription();
+  const { isActive, subscription, pastDue, openPortal } = useSubscription();
+  const [portalBusy, setPortalBusy] = useState(false);
+
+  async function manage() {
+    setPortalBusy(true);
+    try {
+      await openPortal();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open the billing portal");
+    } finally {
+      setPortalBusy(false);
+    }
+  }
 
   async function subscribe(priceId: string) {
     try {
@@ -113,12 +132,24 @@ function PricingPage() {
             </ul>
 
             {isActive ? (
-              <div className="mt-6 rounded-xl border border-border bg-background/60 p-3 text-sm">
-                You're on Host Pro
-                {subscription?.cancel_at_period_end && subscription.current_period_end
-                  ? ` — access until ${new Date(subscription.current_period_end).toLocaleDateString()}`
-                  : ""}
-                .
+              <div className="mt-6 space-y-3">
+                <div className="rounded-xl border border-border bg-background/60 p-3 text-sm">
+                  You're on Host Pro
+                  {subscription?.cancel_at_period_end && subscription.current_period_end
+                    ? ` — access until ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                    : subscription?.current_period_end
+                      ? ` — renews ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                      : ""}
+                  .
+                </div>
+                {pastDue && (
+                  <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm">
+                    Your last payment failed. Update your payment method to keep Pro benefits.
+                  </div>
+                )}
+                <Button variant="outline" className="w-full" disabled={portalBusy} onClick={manage}>
+                  {portalBusy ? "Opening…" : "Manage subscription"}
+                </Button>
               </div>
             ) : (
               <div className="mt-6 space-y-2">

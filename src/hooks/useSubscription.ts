@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPaddleEnvironment } from "@/lib/paddle";
+import { openBillingPortal } from "@/utils/payments.functions";
 
 export type SubscriptionRow = {
   id: string;
@@ -66,5 +67,21 @@ export function useSubscription() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { subscription, isActive: computeActive(subscription), loading, refresh: load };
+  const isActive = computeActive(subscription);
+
+  async function openPortal() {
+    const url = await openBillingPortal({ data: { environment: getPaddleEnvironment() } });
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  return {
+    subscription,
+    isActive,
+    isPro: isActive,
+    pastDue: subscription?.status === "past_due",
+    cancelling: !!subscription?.cancel_at_period_end,
+    loading,
+    refresh: load,
+    openPortal,
+  };
 }

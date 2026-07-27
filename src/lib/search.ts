@@ -17,6 +17,8 @@ export type SpaceResult = {
   live_occupancy_status: string;
   distance_km: number;
   host_id: string;
+  cancellation_policy: string;
+  is_featured: boolean;
 };
 
 export type SearchFilters = {
@@ -68,6 +70,8 @@ export type SpaceDetail = {
   host_name: string | null;
   host_rating: number;
   host_trust_score: number;
+  cancellation_policy: string;
+  is_featured: boolean;
 };
 
 export async function getSpaceDetail(id: string): Promise<SpaceDetail | null> {
@@ -100,6 +104,8 @@ export type MyBooking = {
   status: string;
   payment_status: string;
   qr_checkin_code: string | null;
+  refund_amount: number;
+  cancellation_policy: string;
   space_title: string;
   space_address: string;
 };
@@ -108,7 +114,7 @@ export async function listMyBookings(): Promise<MyBooking[]> {
   const { data, error } = await supabase
     .from("bookings")
     .select(
-      "id, space_id, start_time, end_time, total_price, status, payment_status, qr_checkin_code, parking_spaces!inner(title, address)",
+      "id, space_id, start_time, end_time, total_price, status, payment_status, qr_checkin_code, refund_amount, parking_spaces!inner(title, address, cancellation_policy)",
     )
     .order("start_time", { ascending: false });
   if (error) throw error;
@@ -121,7 +127,10 @@ export async function listMyBookings(): Promise<MyBooking[]> {
     status: string;
     payment_status: string;
     qr_checkin_code: string | null;
-    parking_spaces: { title: string; address: string } | { title: string; address: string }[];
+    refund_amount: number | null;
+    parking_spaces:
+      | { title: string; address: string; cancellation_policy: string }
+      | { title: string; address: string; cancellation_policy: string }[];
   }) => {
     const ps = Array.isArray(b.parking_spaces) ? b.parking_spaces[0] : b.parking_spaces;
     return {
@@ -133,8 +142,34 @@ export async function listMyBookings(): Promise<MyBooking[]> {
       status: b.status,
       payment_status: b.payment_status,
       qr_checkin_code: b.qr_checkin_code,
+      refund_amount: Number(b.refund_amount ?? 0),
+      cancellation_policy: ps?.cancellation_policy ?? "moderate",
       space_title: ps?.title ?? "",
       space_address: ps?.address ?? "",
     };
   });
+}
+
+export type CancellationQuote = {
+  policy: string;
+  cutoff_hours: number;
+  hours_until_start: number;
+  refundable: boolean;
+  refund_amount: number;
+};
+
+export async function getCancellationQuote(bookingId: string): Promise<CancellationQuote> {
+  const { data, error } = await supabase.rpc("get_cancellation_quote", {
+    p_booking_id: bookingId,
+  } as never);
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as CancellationQuote | undefined;
+  if (!row) throw new Error("Could not load the cancellation policy");
+  return {
+    policy: row.policy,
+    cutoff_hours: Number(row.cutoff_hours),
+    hours_until_start: Number(row.hours_until_start),
+    refundable: !!row.refundable,
+    refund_amount: Number(row.refund_amount ?? 0),
+  };
 }

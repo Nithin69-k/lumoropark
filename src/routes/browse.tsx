@@ -151,7 +151,14 @@ function BrowsePage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <div className="truncate font-semibold">{s.title}</div>
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <div className="truncate font-semibold">{s.title}</div>
+                        {s.is_featured && (
+                          <span className="shrink-0 rounded-full bg-gradient-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                            Pro
+                          </span>
+                        )}
+                      </div>
                       <div className="whitespace-nowrap text-sm font-semibold text-primary">
                         ${s.price_per_hour}/hr
                       </div>

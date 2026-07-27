@@ -1,3 +1,4 @@
+import { policyLabel } from "@/lib/spaces";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -250,12 +251,30 @@ function SpacePage() {
                   {(detail.host_name ?? "H").slice(0, 1).toUpperCase()}
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Hosted by {detail.host_name ?? "a LumoroX host"}</div>
+                  <div className="flex items-center gap-1.5 text-sm font-medium">
+                    Hosted by {detail.host_name ?? "a LumoroX host"}
+                    {detail.is_featured && (
+                      <span className="rounded-full bg-gradient-brand px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                        Pro host
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     Trust score {detail.host_trust_score} · {band.label} · ★ {detail.host_rating.toFixed(1)}
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-border bg-card p-4">
+              <div className="text-sm font-semibold">Cancellation policy</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {policyLabel(detail.cancellation_policy).label}
+                </span>{" "}
+                — {policyLabel(detail.cancellation_policy).blurb} After that cutoff the booking is
+                non-refundable.
+              </p>
             </div>
 
             <div className="mt-6">
