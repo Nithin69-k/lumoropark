@@ -65,7 +65,11 @@ function Landing() {
             <BrandLogo className="h-9 sm:h-10" />
           </Link>
           <nav className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/pricing">Pricing</Link>
+            </Button>
             {signedIn ? (
+
               <Button asChild size="sm">
                 <Link to="/profile">My profile</Link>
               </Button>
