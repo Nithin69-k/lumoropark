@@ -55,7 +55,7 @@ function PrivacyPage() {
         />
       </LegalSection>
 
-      <LegalSection heading="2. Why we use it and our legal basis">
+      <LegalSection heading="3. Why we use it and our legal basis">
         <LegalList
           items={[
             "To create your account and provide the booking, hosting and check-in service — performance of our contract with you.",
@@ -67,7 +67,7 @@ function PrivacyPage() {
         />
       </LegalSection>
 
-      <LegalSection heading="3. Payment processing">
+      <LegalSection heading="4. Payment processing">
         <p>
           All financial data, including credit cards and banking details for Host payouts, is processed securely
           through our Merchant of Record, Paddle. LUMORO X PARK does not store raw credit card numbers or
@@ -75,7 +75,7 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="4. Third-party sharing">
+      <LegalSection heading="5. Third-party sharing">
         <p>We share personal data only with:</p>
         <LegalList
           items={[
@@ -89,7 +89,7 @@ function PrivacyPage() {
         <p>We do not sell your personal data.</p>
       </LegalSection>
 
-      <LegalSection heading="5. Retention">
+      <LegalSection heading="6. Retention">
         <p>
           We keep personal data only as long as needed for the purposes above. Booking, payout and dispute
           records are retained for as long as required for tax, accounting and fraud-prevention purposes, after
@@ -97,7 +97,7 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="6. Your rights">
+      <LegalSection heading="7. Your rights">
         <p>
           Subject to the law applicable to you, you may request access to your data, correction of inaccurate
           data, deletion, restriction of processing, portability, and you may object to processing or withdraw
@@ -106,7 +106,7 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Security">
+      <LegalSection heading="8. Security">
         <p>
           We apply appropriate technical and organisational measures to protect personal data, including
           encryption in transit, row-level access controls on our database, and restricted administrative
@@ -114,7 +114,7 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="8. Cookies">
+      <LegalSection heading="9. Cookies">
         <p>
           We use essential cookies and local storage to keep you signed in and to remember your preferences.
           Any analytics cookies are used only to understand aggregate product usage. You can clear or block
@@ -122,7 +122,7 @@ function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="9. Contact">
+      <LegalSection heading="10. Contact">
         <p>
           For any privacy request or question, contact us through the in-app support channel. See also our{" "}
           <Link to="/terms" className="font-medium text-primary underline underline-offset-4">
