@@ -120,3 +120,33 @@ Add your license here (e.g. MIT).
 ---
 
 Built by [Nithin K](https://github.com/Nithin69-k)
+
+---
+
+## 🚀 Deploying to Vercel
+
+The app is a TanStack Start (SSR) project. Nitro auto-detects the deploy target, and
+`vite.config.ts` pins `preset: "vercel"` for builds outside Lovable, so a Vercel build
+emits the Build Output API v3 bundle at `.vercel/output` — no adapter or custom server needed.
+
+1. **Import the repo** into Vercel. Leave the framework preset as **Other**
+   (`vercel.json` already sets the build/install commands).
+2. **Add environment variables** (Project Settings → Environment Variables) —
+   copy them from `.env.example`:
+   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
+   - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_PROJECT_ID`
+   - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` (server-only — never prefix with `VITE_`)
+3. **Deploy.** Client routes, SSR, and the `/api/public/*` server routes
+   (Razorpay order creation + signature verification) all run as one serverless function.
+4. **After the first deploy**, add your Vercel domain to the backend Auth
+   *Site URL* / *Redirect URLs* list so Google OAuth and email links return correctly.
+
+Local production check:
+
+```bash
+npm run build   # outputs .vercel/output
+npm run preview
+```
+
+> Note: the same codebase still deploys from Lovable (Cloudflare Workers) unchanged —
+> the Vercel preset only applies outside the Lovable build.
