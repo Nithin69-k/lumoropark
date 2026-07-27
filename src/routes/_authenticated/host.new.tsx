@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
 
@@ -8,7 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createSpace, uploadSpacePhoto } from "@/lib/spaces";
+import {
+  createSpace,
+  uploadSpacePhoto,
+  getMyListingQuota,
+  CANCELLATION_POLICIES,
+  type CancellationPolicy,
+  type ListingQuota,
+} from "@/lib/spaces";
 import { SpacePhoto } from "@/components/SpacePhoto";
 
 // Leaflet touches window at import time — lazy-load to keep it out of SSR.
@@ -38,9 +45,23 @@ function NewSpacePage() {
   const [hasEv, setEv] = useState(false);
   const [hasCamera, setCamera] = useState(false);
   const [hasSensor, setSensor] = useState(false);
+  const [policy, setPolicy] = useState<CancellationPolicy>("moderate");
+  const [quota, setQuota] = useState<ListingQuota | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    getMyListingQuota()
+      .then((q) => alive && setQuota(q))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const atCap = !!quota && !quota.is_pro && quota.used >= quota.max_allowed;
 
   function toggleVehicle(v: string) {
     setVehicles((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
@@ -95,6 +116,7 @@ function NewSpacePage() {
         has_camera: hasCamera,
         has_sensor: hasSensor,
         photos,
+        cancellation_policy: policy,
       });
       toast.success("Listing published");
       navigate({ to: "/host" });
@@ -119,6 +141,18 @@ function NewSpacePage() {
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8">
+        {atCap && (
+          <div className="mb-6 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-sm">
+            <div className="font-medium">You've reached the free plan limit of {quota?.max_allowed} listings</div>
+            <p className="mt-1 text-muted-foreground">
+              Upgrade to Host Pro for unlimited listings, featured placement and a 5% commission.
+            </p>
+            <Button asChild size="sm" className="mt-3">
+              <Link to="/pricing">See Host Pro</Link>
+            </Button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-8 rounded-3xl border border-border bg-card p-6 shadow-card md:p-8">
           <section className="space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Basics</h2>
@@ -161,6 +195,31 @@ function NewSpacePage() {
                 <Label htmlFor="pd">Per day ($) <span className="text-muted-foreground">(optional)</span></Label>
                 <Input id="pd" type="number" min="0" step="1" value={pricePerDay} onChange={(e) => setPricePerDay(e.target.value)} />
               </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Cancellation policy</h2>
+            <p className="text-xs text-muted-foreground">
+              Drivers see this before booking. A full refund is issued automatically if they cancel
+              before your cutoff.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {CANCELLATION_POLICIES.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setPolicy(p.value)}
+                  className={`rounded-2xl border p-4 text-left transition-colors ${
+                    policy === p.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-background hover:bg-accent"
+                  }`}
+                >
+                  <div className="text-sm font-semibold">{p.label}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{p.blurb}</div>
+                </button>
+              ))}
             </div>
           </section>
 
