@@ -59,24 +59,24 @@ function HostDashboard() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-3">
+            <Button asChild variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3">
               <Link to="/profile">
-                <ArrowLeft className="mr-1 h-4 w-4" /> Profile
+                <ArrowLeft className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Profile</span>
               </Link>
             </Button>
-            <h1 className="font-display text-lg font-bold">Host dashboard</h1>
+            <h1 className="truncate font-display text-base font-bold sm:text-lg">Host dashboard</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
             <Button asChild size="sm" variant="outline">
               <Link to="/host/earnings">Earnings</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link to="/host/scan"><ScanLine className="mr-1 h-4 w-4" /> Check-in</Link>
+              <Link to="/host/scan"><ScanLine className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Check-in</span></Link>
             </Button>
             <Button asChild size="sm">
-              <Link to="/host/new"><Plus className="mr-1 h-4 w-4" /> List a space</Link>
+              <Link to="/host/new"><Plus className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">List a space</span></Link>
             </Button>
           </div>
         </div>

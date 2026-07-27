@@ -63,12 +63,12 @@ function EarningsPage() {
   return (
     <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/host"><ArrowLeft className="mr-1 h-4 w-4" />Host</Link>
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+            <Button asChild variant="ghost" size="sm" className="shrink-0 px-2 sm:px-3">
+              <Link to="/host"><ArrowLeft className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Host</span></Link>
             </Button>
-            <h1 className="font-display text-lg font-bold">Earnings &amp; payouts</h1>
+            <h1 className="truncate font-display text-base font-bold sm:text-lg">Earnings &amp; payouts</h1>
           </div>
           <PayoutDialog
             available={available}

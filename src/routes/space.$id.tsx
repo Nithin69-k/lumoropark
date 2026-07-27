@@ -190,8 +190,8 @@ function SpacePage() {
   return (
     <div className="min-h-full bg-gradient-surface pb-16">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <Button asChild variant="ghost" size="sm">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
+          <Button asChild variant="ghost" size="sm" className="shrink-0">
             <Link to="/browse"><ArrowLeft className="mr-1 h-4 w-4" />Back</Link>
           </Button>
           <span
