@@ -65,7 +65,7 @@ export const cancelBookingWithRefund = createServerFn({ method: "POST" })
         const payload = (await res.json()) as { data?: { id?: string } };
         await supabaseAdmin.rpc("mark_booking_refunded", {
           p_booking_id: data.bookingId,
-          p_refund_id: payload.data?.id ?? null,
+          p_refund_id: payload.data?.id ?? undefined,
         });
       }
     }
