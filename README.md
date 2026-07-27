@@ -1,140 +1,122 @@
-<div align="center">
+# LumoroX Park
 
-# 🅿️ LumoroX Park
+**Book private driveway parking, by the hour.**
 
-**Book private driveway parking by the hour — or turn your driveway into income.**
+🔗 Live app: [lumoropark.lovable.app](https://lumoropark.lovable.app/)
+📦 Status: **Early access / pre-launch** — "Live in your city soon"
 
-[![Live App](https://img.shields.io/badge/Live%20App-lumoropark.lovable.app-6C5CE7?style=for-the-badge)](https://lumoropark.lovable.app)
-[![Built with Lovable](https://img.shields.io/badge/Built%20with-Lovable-FF6B6B?style=for-the-badge)](https://lovable.dev)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#license)
-
-[Live Demo](https://lumoropark.lovable.app) · [Report Bug](../../issues) · [Request Feature](../../issues)
-
-</div>
+LumoroX Park is a peer-to-peer parking marketplace. Renters find and book private driveways near them by the hour; hosts turn empty driveway space into income. Live availability, contactless QR check-in, and public trust scores are designed to make the experience fast and reliable for both sides.
 
 ---
 
-## 📖 Overview
-
-**LumoroX Park** is a peer-to-peer driveway parking marketplace. Renters find and book private parking spots near them by the hour, while hosts list their empty driveways to earn passive income. The platform is built around three core ideas: **live availability**, **frictionless contactless check-in**, and **two-sided trust**.
-
-> Park smarter. Earn from your driveway.
-
 ## ✨ Features
 
-- 🗺️ **Live map** — see free spots update in real time as bookings happen
-- 📱 **QR check-in** — contactless arrival, no keys and no phone calls
-- ⚡ **EV-ready filtering** — search by chargers, covered spots, and gated lots
-- 🛡️ **Trust score** — every host and renter earns a public reliability score
-- 🔐 **Auth flows** — dedicated sign-in / sign-up for both renters and hosts
-- 🚗 **Two-sided marketplace** — "Find parking near me" for renters, "List your driveway" for hosts
+- **Live map** — Free spots update in real time as bookings happen.
+- **QR check-in** — Contactless arrival: scan on-site, no keys, no phone calls.
+- **EV-ready filtering** — Filter listings for EV chargers, covered spots, and gated lots.
+- **Trust score** — Every host and renter builds a public reliability score based on past bookings.
+- **Two-sided flow** — "Find parking near me" for renters, "List your driveway" for hosts.
+- **Single unified signup** — One account covers both booking and listing; sign up with Google or email.
 
-## 🖼️ Preview
+---
 
-<div align="center">
+## 🧭 Current App Structure
 
-<!-- TODO: replace with real screenshots — drop images in a /docs or /public/screenshots folder and update paths -->
-<img src="./docs/screenshot-landing.png" alt="LumoroX Park landing page" width="800"/>
+| Page | Path | What it does |
+|---|---|---|
+| Home | `/` | Landing page — value prop, feature highlights, CTAs to browse or list |
+| Browse | `/browse` | Map-based search with filters and geolocation ("Locating…"); currently shows no live listings in most areas since the platform is pre-launch |
+| Sign up | `/auth?mode=signup` | Create account via Google OAuth or email/password |
+| Sign in | `/auth?mode=signin` | Existing user login |
 
-</div>
+> The browse map is live and functional, but listing inventory is still empty in most areas — the app is in a pre-launch/early-access phase ("Live in your city soon").
 
-> 📸 *Add screenshots of the landing page, browse/map view, and booking flow here before publishing.*
+---
 
-## 🧱 Tech Stack
+## 🧭 How it's meant to work
 
-> ⚠️ **Confirm/edit this section to match your actual repo** — inferred from the deployed app (built via [Lovable](https://lovable.dev)); update anything that doesn't match your codebase.
+1. **Renters** browse the live map, filter by price/EV/covered/gated, and book a spot by the hour.
+2. **Hosts** list their driveway with availability windows and pricing.
+3. On arrival, renters scan a **QR code** to check in — no key exchange needed.
+4. After each booking, both sides rate the experience, feeding the public **trust score**.
 
-| Layer | Technology |
-|---|---|
-| Framework | React + Vite |
-| Language | TypeScript |
-| Styling | Tailwind CSS + shadcn/ui |
-| Routing | React Router |
-| Auth / Backend | Supabase *(confirm)* |
-| Maps | *(confirm — e.g. Mapbox / Google Maps)* |
-| Deployment | Lovable / Vercel |
+---
+
+## 🛠 Tech Stack
+
+> Fill this in with what's actually wired up in the repo — the fields below are common defaults for Lovable-scaffolded apps, not confirmed for this project.
+
+- Frontend: React + TypeScript (Vite)
+- Styling: Tailwind CSS
+- Backend/DB: _fill in (e.g. Supabase)_
+- Auth: _fill in (e.g. Supabase Auth, given Google OAuth + email/password sign-up)_
+- Maps/Geolocation: _fill in (e.g. Mapbox / Google Maps API)_
+- Hosting: Lovable
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
-- npm or pnpm/yarn
+- npm or yarn
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/Nithin69-k/lumoropark.git
 cd lumoropark
-
-# Install dependencies
 npm install
-
-# Start the development server
-npm run dev
 ```
-
-The app will be available at `http://localhost:5173` (or the port Vite assigns).
 
 ### Environment Variables
 
 Create a `.env` file in the project root:
 
 ```env
-# TODO: add your actual environment variables
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_MAPS_API_KEY=your_maps_api_key
 ```
 
-## 📂 Project Structure
+> Replace these with whatever services your backend actually uses.
 
-```
-lumoropark/
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/           # Route-level pages (landing, browse, auth, etc.)
-│   ├── hooks/            # Custom React hooks
-│   ├── lib/               # Utilities, API clients
-│   └── main.tsx
-├── public/
-├── package.json
-└── README.md
+### Run locally
+
+```bash
+npm run dev
 ```
 
-> *(Update this to reflect your actual folder structure.)*
+App runs at `http://localhost:5173` (or the port Vite assigns).
 
-## 🗺️ Roadmap
+### Build for production
 
-- [ ] Live map integration with real-time spot availability
-- [ ] QR-based check-in/check-out flow
-- [ ] Host dashboard with earnings & booking analytics
-- [ ] In-app trust score & review system
-- [ ] Payments integration
-- [ ] Mobile app (React Native)
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 📬 Contact
-
-**Nithin K**
-📧 nithingowda490@gmail.com
-🔗 [GitHub](https://github.com/Nithin69-k) · [Portfolio](https://nitixnstech.vercel.app)
+```bash
+npm run build
+```
 
 ---
 
-<div align="center">
+## 📸 Screenshot
 
-</div>
+![LumoroX Park homepage](blob:https://claude.ai/7107265c-4f89-45aa-a5dd-e8fa89754744)
+
+---
+
+## 🗺 Roadmap
+
+- [ ] Launch live listings in first city
+- [ ] Populate browse map with real host inventory
+- [ ] In-app messaging between host and renter
+- [ ] Payment integration
+- [ ] Push notifications for booking status
+
+---
+
+## 📄 License
+
+Add your license here (e.g. MIT).
+
+---
+
+Built by [Nithin K](https://github.com/Nithin69-k)
