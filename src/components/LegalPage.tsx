@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { SiteFooter } from "@/components/SiteFooter";
 
 export function LegalPage({
   title,
@@ -16,7 +15,7 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-full flex-col bg-background text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-5 py-4">
           <Link
@@ -34,8 +33,6 @@ export function LegalPage({
         {intro ? <p className="mt-6 text-base text-muted-foreground">{intro}</p> : null}
         <div className="mt-10 space-y-10">{children}</div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

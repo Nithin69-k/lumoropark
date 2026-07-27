@@ -55,7 +55,7 @@ function ProfilePage() {
 
   if (isLoading || !profile) {
     return (
-      <div className="min-h-screen bg-gradient-surface px-4 py-12">
+      <div className="min-h-full bg-gradient-surface px-4 py-12">
         <div className="mx-auto max-w-2xl animate-pulse">
           <div className="h-8 w-40 rounded bg-muted" />
           <div className="mt-6 h-48 rounded-2xl bg-muted" />
@@ -81,7 +81,7 @@ function ProfilePage() {
           : "bg-muted text-muted-foreground border-border";
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-full bg-gradient-surface">
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-5 py-4">
           <Link to="/" className="flex items-center" aria-label="LumoroX Park home">

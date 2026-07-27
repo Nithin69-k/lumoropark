@@ -62,7 +62,7 @@ function BookingsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-surface">
+    <div className="min-h-full bg-gradient-surface">
       <PaymentTestModeBanner />
       <header className="border-b border-border/60 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-5 py-4">

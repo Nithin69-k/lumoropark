@@ -53,7 +53,7 @@ function Onboarding() {
   if (!loaded) return <div className="min-h-screen" />;
 
   return (
-    <div className="min-h-screen bg-gradient-surface px-4 py-12">
+    <div className="min-h-full bg-gradient-surface px-4 py-12">
       <div className="mx-auto max-w-lg">
         <h1 className="text-3xl font-bold tracking-tight">Welcome to LumoroX Park</h1>
         <p className="mt-2 text-muted-foreground">
