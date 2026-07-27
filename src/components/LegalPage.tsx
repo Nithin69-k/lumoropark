@@ -33,8 +33,6 @@ export function LegalPage({
         {intro ? <p className="mt-6 text-base text-muted-foreground">{intro}</p> : null}
         <div className="mt-10 space-y-10">{children}</div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
