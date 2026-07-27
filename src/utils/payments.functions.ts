@@ -98,9 +98,8 @@ export const openBillingPortal = createServerFn({ method: "POST" })
     const session = await paddle.customerPortalSessions.create(sub.paddle_customer_id, [
       sub.paddle_subscription_id,
     ]);
-    const url =
-      session.urls?.subscriptions?.[0]?.cancelSubscription ??
-      session.urls?.general?.overview;
+    const url = session.urls?.general?.overview;
     if (!url) throw new Error("Could not open the billing portal");
-    return session.urls.general.overview;
+    return url;
   });
+
