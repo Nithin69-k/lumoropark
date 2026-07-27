@@ -81,6 +81,7 @@ function EarningsPage() {
       <main className="mx-auto max-w-5xl space-y-6 px-5 py-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat icon={<Wallet className="h-4 w-4" />} label="Available balance" value={money(available)} highlight />
+          <Stat icon={<Clock className="h-4 w-4" />} label="Clearing (24h hold)" value={money(wallet?.pending_clearance ?? 0)} />
           <Stat icon={<Clock className="h-4 w-4" />} label="Pending payout" value={money(wallet?.pending_payout ?? 0)} />
           <Stat icon={<Banknote className="h-4 w-4" />} label="Paid out" value={money(wallet?.total_paid_out ?? 0)} />
           <Stat icon={<TrendingUp className="h-4 w-4" />} label="Lifetime earnings" value={money(wallet?.lifetime_earnings ?? 0)} />
