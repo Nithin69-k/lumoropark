@@ -83,15 +83,20 @@ export type Database = {
       }
       bookings: {
         Row: {
+          amount_charged: number
           checked_in_at: string | null
           checked_out_at: string | null
           created_at: string
           end_time: string
+          host_earning: number
           host_id: string
           id: string
+          paddle_transaction_id: string | null
           payment_status: string
+          platform_fee: number
           qr_checkin_code: string | null
           renter_id: string
+          reservation_fee: number
           space_id: string
           start_time: string
           status: string
@@ -100,15 +105,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_charged?: number
           checked_in_at?: string | null
           checked_out_at?: string | null
           created_at?: string
           end_time: string
+          host_earning?: number
           host_id: string
           id?: string
+          paddle_transaction_id?: string | null
           payment_status?: string
+          platform_fee?: number
           qr_checkin_code?: string | null
           renter_id: string
+          reservation_fee?: number
           space_id: string
           start_time: string
           status?: string
@@ -117,15 +127,20 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_charged?: number
           checked_in_at?: string | null
           checked_out_at?: string | null
           created_at?: string
           end_time?: string
+          host_earning?: number
           host_id?: string
           id?: string
+          paddle_transaction_id?: string | null
           payment_status?: string
+          platform_fee?: number
           qr_checkin_code?: string | null
           renter_id?: string
+          reservation_fee?: number
           space_id?: string
           start_time?: string
           status?: string
@@ -245,6 +260,44 @@ export type Database = {
             foreignKeyName: "disputes_raised_by_fkey"
             columns: ["raised_by"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      host_wallets: {
+        Row: {
+          available_balance: number
+          created_at: string
+          host_id: string
+          lifetime_earnings: number
+          pending_payout: number
+          total_paid_out: number
+          updated_at: string
+        }
+        Insert: {
+          available_balance?: number
+          created_at?: string
+          host_id: string
+          lifetime_earnings?: number
+          pending_payout?: number
+          total_paid_out?: number
+          updated_at?: string
+        }
+        Update: {
+          available_balance?: number
+          created_at?: string
+          host_id?: string
+          lifetime_earnings?: number
+          pending_payout?: number
+          total_paid_out?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "host_wallets_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -403,6 +456,68 @@ export type Database = {
           },
         ]
       }
+      payout_requests: {
+        Row: {
+          account_holder: string | null
+          account_number: string | null
+          admin_notes: string | null
+          amount: number
+          bank_code: string | null
+          bank_name: string | null
+          created_at: string
+          host_id: string
+          id: string
+          is_automatic: boolean
+          method: string
+          processed_at: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder?: string | null
+          account_number?: string | null
+          admin_notes?: string | null
+          amount: number
+          bank_code?: string | null
+          bank_name?: string | null
+          created_at?: string
+          host_id: string
+          id?: string
+          is_automatic?: boolean
+          method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder?: string | null
+          account_number?: string | null
+          admin_notes?: string | null
+          amount?: number
+          bank_code?: string | null
+          bank_name?: string | null
+          created_at?: string
+          host_id?: string
+          id?: string
+          is_automatic?: boolean
+          method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_contacts: {
         Row: {
           created_at: string
@@ -546,6 +661,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string
+          paddle_subscription_id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -566,6 +729,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          booking_id: string | null
+          created_at: string
+          host_id: string
+          id: string
+          kind: string
+          note: string | null
+          payout_id: string | null
+        }
+        Insert: {
+          amount: number
+          balance_after?: number
+          booking_id?: string | null
+          created_at?: string
+          host_id: string
+          id?: string
+          kind: string
+          note?: string | null
+          payout_id?: string | null
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          booking_id?: string | null
+          created_at?: string
+          host_id?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          payout_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -755,6 +969,28 @@ export type Database = {
           status: string
         }[]
       }
+      admin_list_payouts: {
+        Args: never
+        Returns: {
+          account_holder: string
+          account_number: string
+          admin_notes: string
+          amount: number
+          bank_code: string
+          bank_name: string
+          host_id: string
+          host_name: string
+          id: string
+          is_automatic: boolean
+          processed_at: string
+          requested_at: string
+          status: string
+        }[]
+      }
+      admin_process_payout: {
+        Args: { p_action: string; p_notes?: string; p_payout_id: string }
+        Returns: undefined
+      }
       admin_stats: {
         Args: never
         Returns: {
@@ -780,15 +1016,20 @@ export type Database = {
       cancel_booking: {
         Args: { p_booking_id: string; p_reason?: string }
         Returns: {
+          amount_charged: number
           checked_in_at: string | null
           checked_out_at: string | null
           created_at: string
           end_time: string
+          host_earning: number
           host_id: string
           id: string
+          paddle_transaction_id: string | null
           payment_status: string
+          platform_fee: number
           qr_checkin_code: string | null
           renter_id: string
+          reservation_fee: number
           space_id: string
           start_time: string
           status: string
@@ -966,6 +1207,25 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_booking_charge: {
+        Args: { p_booking_id: string }
+        Returns: {
+          base_amount: number
+          credits: number
+          platform_fee: number
+          reservation_fee: number
+          total: number
+        }[]
+      }
+      get_my_wallet: {
+        Args: never
+        Returns: {
+          available_balance: number
+          lifetime_earnings: number
+          pending_payout: number
+          total_paid_out: number
+        }[]
+      }
       get_space_detail: {
         Args: { p_id: string }
         Returns: {
@@ -999,6 +1259,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_active_subscription: {
+        Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1022,6 +1286,20 @@ export type Database = {
           to_status: string
         }[]
       }
+      list_my_payouts: {
+        Args: never
+        Returns: {
+          account_number: string
+          admin_notes: string
+          amount: number
+          bank_name: string
+          id: string
+          is_automatic: boolean
+          processed_at: string
+          requested_at: string
+          status: string
+        }[]
+      }
       list_my_spaces: {
         Args: never
         Returns: {
@@ -1036,6 +1314,17 @@ export type Database = {
           price_per_day: number
           price_per_hour: number
           title: string
+        }[]
+      }
+      list_my_wallet_transactions: {
+        Args: { p_limit?: number }
+        Returns: {
+          amount: number
+          balance_after: number
+          created_at: string
+          id: string
+          kind: string
+          note: string
         }[]
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
@@ -1114,11 +1403,22 @@ export type Database = {
         Args: { p_booking_id: string; p_reason: string }
         Returns: string
       }
+      request_payout: {
+        Args: {
+          p_account_holder: string
+          p_account_number: string
+          p_amount: number
+          p_bank_code: string
+          p_bank_name: string
+        }
+        Returns: string
+      }
       reset_demo_data: { Args: never; Returns: Json }
       resolve_dispute: {
         Args: { p_dispute_id: string; p_notes: string; p_status: string }
         Returns: undefined
       }
+      run_monthly_payouts: { Args: never; Returns: number }
       search_spaces: {
         Args: {
           p_covered?: boolean
@@ -1151,6 +1451,14 @@ export type Database = {
         }[]
       }
       seed_demo_data: { Args: never; Returns: Json }
+      settle_booking_payment: {
+        Args: {
+          p_amount_charged: number
+          p_booking_id: string
+          p_transaction_id: string
+        }
+        Returns: undefined
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
