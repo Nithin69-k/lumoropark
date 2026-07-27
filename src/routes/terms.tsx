@@ -55,7 +55,7 @@ function TermsPage() {
           items={[
             "Hosts guarantee they have the legal right, permits, or authority to lease out the designated parking space (for example, complying with landlord rules or local housing society bylaws).",
             "Hosts must ensure the space is safe, vacant, and clear of hazards during the booked window.",
-            "LUMORO X PARK is not responsible for property damage or unauthorised access caused by a Driver.",
+            "Parking Space Management is not responsible for property damage or unauthorised access caused by a Driver.",
             "Hosts must keep listing details, photos, availability, and pricing accurate and up to date.",
           ]}
         />
@@ -90,7 +90,7 @@ function TermsPage() {
 
       <LegalSection heading="5. Intellectual property">
         <p>
-          LUMORO X PARK retains ownership of the service and all associated intellectual property, including the
+          Parking Space Management retains ownership of the service and all associated intellectual property, including the
           software, documentation, and branding. You receive a limited, non-exclusive, non-transferable right to
           use the service within the plan you have selected. Reverse engineering, resale, or redistribution of
           the service is not permitted. You grant us a limited licence to host and process the content you
@@ -153,7 +153,7 @@ function TermsPage() {
         <p>
           You may not assign these terms without our consent; we may assign them in connection with a merger or
           acquisition. Neither party is liable for failure to perform due to events beyond reasonable control.
-          These terms are governed by the laws of the jurisdiction in which LUMORO X PARK is established, and
+          These terms are governed by the laws of the jurisdiction in which Parking Space Management is established, and
           the courts of that jurisdiction have exclusive jurisdiction over any dispute.
         </p>
       </LegalSection>
