@@ -14,6 +14,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteFooter } from "@/components/SiteFooter";
+import { PerfOverlay } from "@/components/PerfOverlay";
+import { initPerfMonitoring, startPerfTimer } from "@/lib/perf";
+
 
 function NotFoundComponent() {
   return (
