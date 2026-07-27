@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
+import { markPerf, startPerfTimer } from "@/lib/perf";
+
 // Fix default marker icons (Leaflet references image URLs that fail with bundlers)
 const icon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -41,12 +43,23 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
     value ? [value.lat, value.lng] : [40.7128, -74.006],
   );
   const marker = useMemo(() => (value ? [value.lat, value.lng] as [number, number] : null), [value]);
+  const [tilesFailing, setTilesFailing] = useState(false);
+
+  useEffect(() => {
+    const done = startPerfTimer("map_ready", { map: "picker" });
+    return () => done();
+  }, []);
 
   return (
     <div
-      className="overflow-hidden rounded-xl border border-border"
+      className="relative overflow-hidden rounded-xl border border-border"
       style={{ height }}
     >
+      {tilesFailing && (
+        <div className="absolute left-1/2 top-3 z-[401] -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1 text-[11px] text-muted-foreground shadow">
+          Map imagery is unavailable — you can still type the address.
+        </div>
+      )}
       <MapContainer
         center={initialCenter}
         zoom={13}
@@ -56,6 +69,13 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{
+            tileerror: () => {
+              setTilesFailing(true);
+              markPerf("map_tile_error", { map: "picker" });
+            },
+            load: () => setTilesFailing(false),
+          }}
         />
         <ClickHandler onChange={onChange} />
         {marker && (

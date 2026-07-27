@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import type { SpaceResult } from "@/lib/search";
+import { markPerf, startPerfTimer } from "@/lib/perf";
 
 const pinIcon = L.divIcon({
   className: "",
@@ -57,15 +58,45 @@ function MoveListener({ onCenterChange }: { onCenterChange?: Props["onCenterChan
 }
 
 export function BrowseMap({ center, spaces, selectedId, onSelect, onCenterChange, height = 420 }: Props) {
-  const initial = useMemo<[number, number]>(() => [center.lat, center.lng], []);
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  const initial = useMemo<[number, number]>(() => [center.lat, center.lng], []);
+  const [tilesFailing, setTilesFailing] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const done = startPerfTimer("map_ready", { map: "browse" });
+    return () => done();
+  }, []);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border" style={{ height }}>
-      <MapContainer center={initial} zoom={13} scrollWheelZoom style={{ height: "100%", width: "100%" }}>
+    <div className="relative overflow-hidden rounded-2xl border border-border" style={{ height }}>
+      {!ready && (
+        <div className="absolute inset-0 z-[400] grid place-items-center bg-muted/40 text-xs text-muted-foreground">
+          Loading map…
+        </div>
+      )}
+      {tilesFailing && (
+        <div className="absolute left-1/2 top-3 z-[401] -translate-x-1/2 rounded-full border border-border bg-background/90 px-3 py-1 text-[11px] text-muted-foreground shadow">
+          Map imagery is unavailable right now — the list below still works.
+        </div>
+      )}
+      <MapContainer
+        center={initial}
+        zoom={13}
+        scrollWheelZoom
+        style={{ height: "100%", width: "100%" }}
+        whenReady={() => setReady(true)}
+      >
         <TileLayer
           attribution='&copy; OpenStreetMap'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{
+            tileerror: () => {
+              setTilesFailing(true);
+              markPerf("map_tile_error", { map: "browse" });
+            },
+            load: () => setTilesFailing(false),
+          }}
         />
         <Recenter center={[center.lat, center.lng]} />
         <MoveListener onCenterChange={onCenterChange} />
