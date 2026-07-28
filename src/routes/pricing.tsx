@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useServerFn } from "@tanstack/react-start";
+import { getPaddleEnvironment } from "@/lib/paddle";
+import { changeSubscriptionPlan } from "@/utils/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 
@@ -49,6 +52,28 @@ function PricingPage() {
   const { openCheckout, loading } = usePaddleCheckout();
   const { isActive, subscription, pastDue, openPortal } = useSubscription();
   const [portalBusy, setPortalBusy] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const runChangePlan = useServerFn(changeSubscriptionPlan);
+
+  const currentPrice = subscription?.price_id;
+  const otherPlan =
+    currentPrice === "host_pro_monthly"
+      ? { priceId: "host_pro_yearly", label: "Switch to yearly — 2 months free" }
+      : currentPrice === "host_pro_yearly"
+        ? { priceId: "host_pro_monthly", label: "Switch to monthly billing" }
+        : null;
+
+  async function switchPlan(priceId: string) {
+    setSwitching(true);
+    try {
+      await runChangePlan({ data: { priceId, environment: getPaddleEnvironment() } });
+      toast.success("Plan updated — the change applies right away");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not switch your plan");
+    } finally {
+      setSwitching(false);
+    }
+  }
 
   async function manage() {
     setPortalBusy(true);
