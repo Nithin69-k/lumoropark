@@ -1,4 +1,5 @@
 import { policyLabel } from "@/lib/spaces";
+import { absoluteUrl } from "@/lib/site";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { lazy, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/space/$id")({
     }
   },
   head: ({ params, loaderData }) => {
-    const url = `https://lumoropark.lovable.app/space/${params.id}`;
+    const url = absoluteUrl(`/space/${params.id}`);
     const d = loaderData?.detail;
     const title = d ? `${d.title} — Private parking on LumoroX Park` : "Parking listing — LumoroX Park";
     const trimmedTitle = title.length > 60 ? `${title.slice(0, 57)}…` : title;

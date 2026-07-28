@@ -11,8 +11,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/BrandLogo";
+import { SITE_URL, absoluteUrl } from "@/lib/site";
 
-const canonicalUrl = "https://lumoropark.lovable.app/guides/rv-parking";
+const canonicalUrl = absoluteUrl("/guides/rv-parking");
 const pageTitle = "RV Parking & Storage Guide: Rent Out Your RV Space | LumoroX Park";
 const pageDescription =
   "Turn your empty RV pad, driveway, or lot into income. Learn how to list RV parking and storage on LumoroX Park, what renters look for, and how to price your space.";
@@ -42,12 +43,12 @@ export const Route = createFileRoute("/guides/rv-parking")({
               author: {
                 "@type": "Organization",
                 name: "LumoroX Park",
-                url: "https://lumoropark.lovable.app",
+                url: SITE_URL,
               },
               publisher: {
                 "@type": "Organization",
                 name: "LumoroX Park",
-                url: "https://lumoropark.lovable.app",
+                url: SITE_URL,
               },
               mainEntityOfPage: {
                 "@type": "WebPage",

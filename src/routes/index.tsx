@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, Zap, QrCode, Truck, Menu } from "lucide-react";
 
+import { absoluteUrl } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -24,10 +26,10 @@ export const Route = createFileRoute("/")({
         content:
           "Find and book private driveway parking near you by the hour. QR check-in, live availability, and EV-ready spots on LumoroX Park.",
       },
-      { property: "og:url", content: "https://lumoropark.lovable.app/" },
+      { property: "og:url", content: absoluteUrl("/") },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://lumoropark.lovable.app/" }],
+    links: [{ rel: "canonical", href: absoluteUrl("/") }],
     scripts: [
       {
         type: "application/ld+json",
@@ -35,10 +37,10 @@ export const Route = createFileRoute("/")({
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "LumoroX Park",
-          url: "https://lumoropark.lovable.app/",
+          url: absoluteUrl("/"),
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://lumoropark.lovable.app/browse?q={search_term_string}",
+            target: absoluteUrl("/browse?q={search_term_string}"),
             "query-input": "required name=search_term_string",
           },
         }),
