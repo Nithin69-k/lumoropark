@@ -8,7 +8,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { signInWithGoogle } from "@/lib/google-signin";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup", "forgot"]).catch("signin"),
@@ -151,9 +151,7 @@ function AuthPage() {
     if (safeNext && typeof window !== "undefined") {
       sessionStorage.setItem("post_auth_next", safeNext);
     }
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/auth",
-    });
+    const result = await signInWithGoogle(window.location.origin + "/auth");
     if (result.error) {
       toast.error(result.error.message ?? "Google sign-in failed");
       setBusy(false);

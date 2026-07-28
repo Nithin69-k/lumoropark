@@ -1,7 +1,10 @@
-import logoAsset from "@/assets/lumorox-park-logo.png.asset.json";
-import logoDarkAsset from "@/assets/lumorox-park-logo-dark.png.asset.json";
-import markAsset from "@/assets/lumorox-park-mark.png.asset.json";
-import markDarkAsset from "@/assets/lumorox-park-mark-dark.png.asset.json";
+// Bundled through Vite so the artwork ships with the deployment itself.
+// (CDN pointer URLs like /__l5e/... only resolve on Lovable hosting, so they
+// 404'd once the app was deployed to Vercel.)
+import logoUrl from "@/assets/lumorox-park-logo.png";
+import logoDarkUrl from "@/assets/lumorox-park-logo-dark.png";
+import markUrl from "@/assets/lumorox-park-mark.png";
+import markDarkUrl from "@/assets/lumorox-park-mark-dark.png";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,8 +23,8 @@ export function BrandLogo({
   className?: string;
 }) {
   const isMark = variant === "mark";
-  const light = isMark ? markAsset.url : logoAsset.url;
-  const dark = isMark ? markDarkAsset.url : logoDarkAsset.url;
+  const light = isMark ? markUrl : logoUrl;
+  const dark = isMark ? markDarkUrl : logoDarkUrl;
   const base = cn(
     isMark ? "h-8 w-8" : "h-8 w-auto",
     "select-none object-contain",
