@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { expireStaleHolds } from "@/utils/account.functions";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle, MessageSquare, Gavel, XCircle } from "lucide-react";
 import { z } from "zod";
@@ -35,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/bookings")({
 });
 
 function BookingsPage() {
+  const releaseHolds = useServerFn(expireStaleHolds);
   const search = Route.useSearch();
   const [items, setItems] = useState<MyBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +60,10 @@ function BookingsPage() {
   }
 
   useEffect(() => {
-    refresh();
+    // Free up any parking slots whose checkout hold lapsed before refreshing.
+    releaseHolds({ data: undefined })
+      .catch(() => undefined)
+      .finally(() => refresh());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
