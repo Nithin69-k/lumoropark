@@ -23,8 +23,8 @@ export function BrandLogo({
   className?: string;
 }) {
   const isMark = variant === "mark";
-  const light = isMark ? markAsset.url : logoAsset.url;
-  const dark = isMark ? markDarkAsset.url : logoDarkAsset.url;
+  const light = isMark ? markUrl : logoUrl;
+  const dark = isMark ? markDarkUrl : logoDarkUrl;
   const base = cn(
     isMark ? "h-8 w-8" : "h-8 w-auto",
     "select-none object-contain",
