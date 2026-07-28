@@ -19,6 +19,7 @@ import { humanAction, isAdmin, listMyActivity } from "@/lib/admin";
 import { unreadCount } from "@/lib/inbox";
 import { listMyBookings } from "@/lib/search";
 import { listMyReviews } from "@/lib/lifecycle";
+import { AccountSettings } from "@/components/AccountSettings";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -189,6 +190,8 @@ function ProfilePage() {
         </div>
 
         <HistoryTabs userId={user.id} />
+
+        <AccountSettings email={user.email ?? ""} />
 
         <section className="mt-8 grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border p-5 text-sm">
