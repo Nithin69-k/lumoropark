@@ -82,3 +82,13 @@ npx vite preview
 
 Inside the Lovable sandbox the build always targets Cloudflare instead; that is
 expected and does not affect Vercel.
+
+## Google sign-in on Vercel
+
+The Lovable OAuth broker only works on `*.lovable.app` domains. On Vercel the
+app falls back to the backend's own Google OAuth endpoint
+(`src/lib/google-signin.ts`), so add your Vercel URL (e.g.
+`https://your-app.vercel.app/auth`) to the allowed redirect URLs in the
+Cloud → Users → Authentication settings before going live.
+Email/password sign-in only needs `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY` present **at build time** in Vercel.
