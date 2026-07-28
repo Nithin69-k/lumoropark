@@ -103,3 +103,52 @@ export const openBillingPortal = createServerFn({ method: "POST" })
     return url;
   });
 
+
+/**
+ * Switches an active Host Pro subscription between the monthly and yearly
+ * plan, pro-rating the change immediately.
+ */
+export const changeSubscriptionPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { priceId: string; environment: PaddleEnv }) => data)
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { data: sub, error } = await context.supabase
+      .from("subscriptions")
+      .select("paddle_subscription_id, status")
+      .eq("user_id", context.userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!sub?.paddle_subscription_id) throw new Error("No subscription found for your account");
+    if (!["active", "trialing", "past_due"].includes(sub.status)) {
+      throw new Error("Your plan must be active before you can switch it");
+    }
+
+    const priceRes = await gatewayFetch(
+      data.environment,
+      `/prices?external_id=${encodeURIComponent(data.priceId)}`,
+    );
+    const priceJson = (await priceRes.json()) as { data?: Array<{ id: string }> };
+    const paddlePriceId = priceJson.data?.[0]?.id;
+    if (!paddlePriceId) throw new Error("That plan is not available right now");
+
+    const res = await gatewayFetch(
+      data.environment,
+      `/subscriptions/${sub.paddle_subscription_id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          items: [{ price_id: paddlePriceId, quantity: 1 }],
+          proration_billing_mode: "prorated_immediately",
+        }),
+      },
+    );
+    if (!res.ok) {
+      const detail = await res.text();
+      console.error("Plan change failed", detail);
+      throw new Error("Could not switch your plan. Please try again or use the billing portal.");
+    }
+    return { ok: true };
+  });
