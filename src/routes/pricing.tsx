@@ -148,10 +148,26 @@ function PricingPage() {
                     Your last payment failed. Update your payment method to keep Pro benefits.
                   </div>
                 )}
+                {subscription?.status === "paused" && (
+                  <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm">
+                    Your plan is paused, so Pro benefits are on hold. Resume it from the billing portal.
+                  </div>
+                )}
+                {otherPlan && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    disabled={switching}
+                    onClick={() => switchPlan(otherPlan.priceId)}
+                  >
+                    {switching ? "Switching…" : otherPlan.label}
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full" disabled={portalBusy} onClick={manage}>
                   {portalBusy ? "Opening…" : "Manage subscription"}
                 </Button>
               </div>
+
             ) : (
               <div className="mt-6 space-y-2">
                 <Button className="w-full" disabled={loading} onClick={() => subscribe("host_pro_monthly")}>
