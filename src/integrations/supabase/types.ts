@@ -1509,7 +1509,7 @@ export type Database = {
         }[]
       }
       my_listing_quota: {
-        Args: never
+        Args: { p_env?: string }
         Returns: {
           is_pro: boolean
           max_allowed: number
