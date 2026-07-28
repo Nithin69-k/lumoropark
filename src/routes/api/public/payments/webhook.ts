@@ -17,20 +17,56 @@ function getSupabase() {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-async function handleTransactionCompleted(data: any) {
+async function refundTransaction(env: PaddleEnv, transactionId: string, reason: string) {
+  const res = await gatewayFetch(env, "/adjustments", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "refund",
+      transaction_id: transactionId,
+      reason,
+      type: "full",
+    }),
+  });
+  if (!res.ok) {
+    console.error("Automatic refund failed", transactionId, await res.text());
+    return null;
+  }
+  const payload = (await res.json()) as { data?: { id?: string } };
+  return payload.data?.id ?? null;
+}
+
+async function handleTransactionCompleted(data: any, env: PaddleEnv) {
   const bookingId = data.customData?.bookingId;
   if (!bookingId) {
     console.log("transaction.completed without bookingId — nothing to settle");
     return;
   }
   const total = Number(data.details?.totals?.total ?? 0) / 100;
-  const { error } = await getSupabase().rpc("settle_booking_payment", {
+  const { data: outcome, error } = await getSupabase().rpc("settle_booking_payment", {
     p_booking_id: bookingId,
     p_transaction_id: data.id,
     p_amount_charged: total,
+    p_env: env,
   });
   if (error) throw new Error(error.message);
+
+  // The slot was confirmed by somebody else while this driver was paying —
+  // refund automatically instead of leaving a clashing reservation.
+  if (outcome === "conflict") {
+    const refundId = await refundTransaction(
+      env,
+      data.id,
+      "Parking slot was taken before payment completed",
+    );
+    if (refundId) {
+      await getSupabase().rpc("mark_booking_refunded", {
+        p_booking_id: bookingId,
+        p_refund_id: refundId,
+      });
+    }
+  }
 }
+
 
 async function handleSubscriptionCreated(data: any, env: PaddleEnv) {
   const userId = data.customData?.userId;
