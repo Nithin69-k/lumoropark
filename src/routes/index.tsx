@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MapPin, ShieldCheck, Zap, QrCode, Truck, Menu } from "lucide-react";
 
+import { absoluteUrl } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { BrandLogo } from "@/components/BrandLogo";
 
