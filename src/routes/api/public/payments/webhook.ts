@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { verifyWebhook, EventName, type PaddleEnv } from "@/lib/paddle.server";
+import { verifyWebhook, gatewayFetch, EventName, type PaddleEnv } from "@/lib/paddle.server";
 
 let _supabase: ReturnType<typeof createClient<Database>> | null = null;
 function getSupabase() {
@@ -17,20 +17,56 @@ function getSupabase() {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-async function handleTransactionCompleted(data: any) {
+async function refundTransaction(env: PaddleEnv, transactionId: string, reason: string) {
+  const res = await gatewayFetch(env, "/adjustments", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "refund",
+      transaction_id: transactionId,
+      reason,
+      type: "full",
+    }),
+  });
+  if (!res.ok) {
+    console.error("Automatic refund failed", transactionId, await res.text());
+    return null;
+  }
+  const payload = (await res.json()) as { data?: { id?: string } };
+  return payload.data?.id ?? null;
+}
+
+async function handleTransactionCompleted(data: any, env: PaddleEnv) {
   const bookingId = data.customData?.bookingId;
   if (!bookingId) {
     console.log("transaction.completed without bookingId — nothing to settle");
     return;
   }
   const total = Number(data.details?.totals?.total ?? 0) / 100;
-  const { error } = await getSupabase().rpc("settle_booking_payment", {
+  const { data: outcome, error } = await getSupabase().rpc("settle_booking_payment", {
     p_booking_id: bookingId,
     p_transaction_id: data.id,
     p_amount_charged: total,
+    p_env: env,
   });
   if (error) throw new Error(error.message);
+
+  // The slot was confirmed by somebody else while this driver was paying —
+  // refund automatically instead of leaving a clashing reservation.
+  if (outcome === "conflict") {
+    const refundId = await refundTransaction(
+      env,
+      data.id,
+      "Parking slot was taken before payment completed",
+    );
+    if (refundId) {
+      await getSupabase().rpc("mark_booking_refunded", {
+        p_booking_id: bookingId,
+        p_refund_id: refundId,
+      });
+    }
+  }
 }
+
 
 async function handleSubscriptionCreated(data: any, env: PaddleEnv) {
   const userId = data.customData?.userId;
@@ -68,17 +104,47 @@ async function handleSubscriptionCreated(data: any, env: PaddleEnv) {
 }
 
 async function handleSubscriptionUpdated(data: any, env: PaddleEnv) {
-  await getSupabase()
+  const item = data.items?.[0];
+  const priceId = item?.price?.importMeta?.externalId;
+  const productId = item?.product?.importMeta?.externalId;
+
+  const { data: rows } = await getSupabase()
     .from("subscriptions")
     .update({
       status: data.status,
+      // Keep the plan on the row in sync so tier gating survives an upgrade,
+      // downgrade or monthly/yearly switch.
+      ...(priceId ? { price_id: priceId } : {}),
+      ...(productId ? { product_id: productId } : {}),
       current_period_start: data.currentBillingPeriod?.startsAt,
       current_period_end: data.currentBillingPeriod?.endsAt,
       cancel_at_period_end: data.scheduledChange?.action === "cancel",
       updated_at: new Date().toISOString(),
     })
     .eq("paddle_subscription_id", data.id)
-    .eq("environment", env);
+    .eq("environment", env)
+    .select("user_id");
+
+  const userId = rows?.[0]?.user_id as string | undefined;
+  if (!userId) return;
+
+  if (data.status === "past_due") {
+    await getSupabase().from("notifications").insert({
+      user_id: userId,
+      kind: "payment",
+      title: "Host Pro payment failed",
+      body: "We couldn't charge your card. Update your payment method to keep your Pro benefits.",
+      link: "/pricing",
+    });
+  } else if (data.status === "paused") {
+    await getSupabase().from("notifications").insert({
+      user_id: userId,
+      kind: "payment",
+      title: "Host Pro paused",
+      body: "Your plan is paused, so Pro benefits are on hold until you resume it.",
+      link: "/pricing",
+    });
+  }
 }
 
 async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
@@ -136,7 +202,7 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
 
   switch (event.eventType) {
     case EventName.TransactionCompleted:
-      await handleTransactionCompleted(event.data);
+      await handleTransactionCompleted(event.data, env);
       break;
     case EventName.TransactionPaymentFailed:
       await handleTransactionPaymentFailed(event.data);

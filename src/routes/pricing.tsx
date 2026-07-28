@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useServerFn } from "@tanstack/react-start";
+import { getPaddleEnvironment } from "@/lib/paddle";
+import { changeSubscriptionPlan } from "@/utils/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 
@@ -49,6 +52,28 @@ function PricingPage() {
   const { openCheckout, loading } = usePaddleCheckout();
   const { isActive, subscription, pastDue, openPortal } = useSubscription();
   const [portalBusy, setPortalBusy] = useState(false);
+  const [switching, setSwitching] = useState(false);
+  const runChangePlan = useServerFn(changeSubscriptionPlan);
+
+  const currentPrice = subscription?.price_id;
+  const otherPlan =
+    currentPrice === "host_pro_monthly"
+      ? { priceId: "host_pro_yearly", label: "Switch to yearly — 2 months free" }
+      : currentPrice === "host_pro_yearly"
+        ? { priceId: "host_pro_monthly", label: "Switch to monthly billing" }
+        : null;
+
+  async function switchPlan(priceId: string) {
+    setSwitching(true);
+    try {
+      await runChangePlan({ data: { priceId, environment: getPaddleEnvironment() } });
+      toast.success("Plan updated — the change applies right away");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not switch your plan");
+    } finally {
+      setSwitching(false);
+    }
+  }
 
   async function manage() {
     setPortalBusy(true);
@@ -148,10 +173,26 @@ function PricingPage() {
                     Your last payment failed. Update your payment method to keep Pro benefits.
                   </div>
                 )}
+                {subscription?.status === "paused" && (
+                  <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm">
+                    Your plan is paused, so Pro benefits are on hold. Resume it from the billing portal.
+                  </div>
+                )}
+                {otherPlan && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    disabled={switching}
+                    onClick={() => switchPlan(otherPlan.priceId)}
+                  >
+                    {switching ? "Switching…" : otherPlan.label}
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full" disabled={portalBusy} onClick={manage}>
                   {portalBusy ? "Opening…" : "Manage subscription"}
                 </Button>
               </div>
+
             ) : (
               <div className="mt-6 space-y-2">
                 <Button className="w-full" disabled={loading} onClick={() => subscribe("host_pro_monthly")}>
