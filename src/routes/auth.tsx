@@ -8,7 +8,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { signInWithGoogle } from "@/lib/google-signin";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup", "forgot"]).catch("signin"),
