@@ -93,6 +93,7 @@ export type Database = {
           earnings_clear_at: string | null
           earnings_released_at: string | null
           end_time: string
+          hold_expires_at: string | null
           host_earning: number
           host_id: string
           id: string
@@ -122,6 +123,7 @@ export type Database = {
           earnings_clear_at?: string | null
           earnings_released_at?: string | null
           end_time: string
+          hold_expires_at?: string | null
           host_earning?: number
           host_id: string
           id?: string
@@ -151,6 +153,7 @@ export type Database = {
           earnings_clear_at?: string | null
           earnings_released_at?: string | null
           end_time?: string
+          hold_expires_at?: string | null
           host_earning?: number
           host_id?: string
           id?: string
@@ -985,6 +988,12 @@ export type Database = {
         Returns: unknown
       }
       _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      account_deletion_blockers: {
+        Args: never
+        Returns: {
+          reason: string
+        }[]
+      }
       addauth: { Args: { "": string }; Returns: boolean }
       addgeometrycolumn:
         | {
@@ -1095,6 +1104,7 @@ export type Database = {
           earnings_clear_at: string | null
           earnings_released_at: string | null
           end_time: string
+          hold_expires_at: string | null
           host_earning: number
           host_id: string
           id: string
@@ -1130,26 +1140,48 @@ export type Database = {
         }[]
       }
       checkout_booking: { Args: { p_booking_id: string }; Returns: undefined }
-      create_parking_space: {
-        Args: {
-          p_address: string
-          p_cancellation_policy?: string
-          p_description: string
-          p_has_camera: boolean
-          p_has_ev_charging: boolean
-          p_has_sensor: boolean
-          p_is_covered: boolean
-          p_is_gated: boolean
-          p_lat: number
-          p_lng: number
-          p_photos: string[]
-          p_price_per_day: number
-          p_price_per_hour: number
-          p_title: string
-          p_vehicle_types: string[]
-        }
-        Returns: string
-      }
+      create_parking_space:
+        | {
+            Args: {
+              p_address: string
+              p_cancellation_policy?: string
+              p_description: string
+              p_has_camera: boolean
+              p_has_ev_charging: boolean
+              p_has_sensor: boolean
+              p_is_covered: boolean
+              p_is_gated: boolean
+              p_lat: number
+              p_lng: number
+              p_photos: string[]
+              p_price_per_day: number
+              p_price_per_hour: number
+              p_title: string
+              p_vehicle_types: string[]
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_address: string
+              p_cancellation_policy?: string
+              p_description: string
+              p_env?: string
+              p_has_camera: boolean
+              p_has_ev_charging: boolean
+              p_has_sensor: boolean
+              p_is_covered: boolean
+              p_is_gated: boolean
+              p_lat: number
+              p_lng: number
+              p_photos: string[]
+              p_price_per_day: number
+              p_price_per_hour: number
+              p_title: string
+              p_vehicle_types: string[]
+            }
+            Returns: string
+          }
       create_pending_booking: {
         Args: { p_end: string; p_space_id: string; p_start: string }
         Returns: string
@@ -1187,6 +1219,7 @@ export type Database = {
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      expire_pending_bookings: { Args: never; Returns: number }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
@@ -1285,16 +1318,27 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
-      get_booking_charge: {
-        Args: { p_booking_id: string }
-        Returns: {
-          base_amount: number
-          credits: number
-          platform_fee: number
-          reservation_fee: number
-          total: number
-        }[]
-      }
+      get_booking_charge:
+        | {
+            Args: { p_booking_id: string }
+            Returns: {
+              base_amount: number
+              credits: number
+              platform_fee: number
+              reservation_fee: number
+              total: number
+            }[]
+          }
+        | {
+            Args: { p_booking_id: string; p_env?: string }
+            Returns: {
+              base_amount: number
+              credits: number
+              platform_fee: number
+              reservation_fee: number
+              total: number
+            }[]
+          }
       get_cancellation_quote: {
         Args: { p_booking_id: string }
         Returns: {
@@ -1369,9 +1413,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      host_commission_rate: { Args: { _host_id: string }; Returns: number }
+      host_commission_rate: {
+        Args: { _env?: string; _host_id: string }
+        Returns: number
+      }
       host_earnings_analytics: {
-        Args: never
+        Args: { p_env?: string }
         Returns: {
           bookings: number
           gross: number
@@ -1383,7 +1430,10 @@ export type Database = {
         Args: { _booking_id: string; _user_id: string }
         Returns: boolean
       }
-      is_host_pro: { Args: { _user_id: string }; Returns: boolean }
+      is_host_pro: {
+        Args: { _env?: string; _user_id: string }
+        Returns: boolean
+      }
       list_dispute_events: {
         Args: { p_dispute_id: string }
         Returns: {
@@ -1447,6 +1497,17 @@ export type Database = {
         Returns: undefined
       }
       mark_notifications_read: { Args: never; Returns: undefined }
+      my_billing_history: {
+        Args: { p_env?: string }
+        Returns: {
+          amount: number
+          description: string
+          kind: string
+          occurred_at: string
+          reference: string
+          status: string
+        }[]
+      }
       my_listing_quota: {
         Args: never
         Returns: {
@@ -1585,9 +1646,10 @@ export type Database = {
         Args: {
           p_amount_charged: number
           p_booking_id: string
+          p_env?: string
           p_transaction_id: string
         }
-        Returns: undefined
+        Returns: string
       }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
