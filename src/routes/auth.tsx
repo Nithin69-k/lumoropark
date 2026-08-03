@@ -168,8 +168,11 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-surface px-4 py-12">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex items-center" aria-label="LumoroX Park home">
+        <Link to="/" className="mb-6 flex items-center gap-2" aria-label="LumoroX Park home">
           <BrandLogo className="h-10" />
+          <span className="text-lg font-bold tracking-tight">
+            <span aria-hidden="true">🅿️</span> LumoroX Park
+          </span>
         </Link>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-2xl font-bold">
