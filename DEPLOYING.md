@@ -92,3 +92,60 @@ app falls back to the backend's own Google OAuth endpoint
 Cloud → Users → Authentication settings before going live.
 Email/password sign-in only needs `VITE_SUPABASE_URL` and
 `VITE_SUPABASE_PUBLISHABLE_KEY` present **at build time** in Vercel.
+
+---
+
+## Using your own Supabase project
+
+The app talks to Supabase through standard environment variables, so it can run
+against any Supabase project — Lovable-managed or your own.
+
+1. Create a project at supabase.com.
+2. Open **SQL Editor** and run `supabase/schema.sql` once. That file contains
+   every table, index, constraint, function, trigger, RLS policy and grant this
+   app needs. Regenerate it any time with `bash scripts/export-schema.sh`.
+3. **Authentication → Providers**: enable Email, and enable Google if you want
+   social sign-in (paste your Google OAuth client ID/secret).
+4. **Authentication → URL Configuration**: set the Site URL to your deployed
+   domain and add these redirect URLs:
+   - `https://your-domain/auth`
+   - `https://your-domain/reset-password`
+5. **Project Settings → API**: copy the project URL, the publishable key and the
+   service-role key into your host's environment variables (see `.env.example`).
+
+Off Lovable hosting, Google sign-in automatically uses Supabase's own OAuth
+flow instead of the Lovable broker — no code change required.
+
+## Deploying
+
+All three platforms build with `npm run build` and serve `.output`.
+
+| Platform | Config in repo | Notes |
+| --- | --- | --- |
+| Vercel | `vercel.json` | Output directory `.vercel/output`. |
+| Netlify | `netlify.toml` | Publishes `.output/public`, routes the rest to the server bundle. |
+| Render | `render.yaml` | Web service, start command `node .output/server/index.mjs`. |
+
+Set every variable from `.env.example` **before** the first build — anything
+prefixed with `VITE_` is baked into the browser bundle at build time.
+
+### Payments without Lovable hosting
+
+If `LOVABLE_API_KEY` is not set, the server calls the Paddle API directly using
+`PADDLE_SANDBOX_API_KEY` / `PADDLE_LIVE_API_KEY`. Point your Paddle webhook at
+`https://your-domain/api/public/payments/webhook?env=live` (and the sandbox one
+at `...?env=sandbox`) and store the signing secrets in
+`PAYMENTS_LIVE_WEBHOOK_SECRET` / `PAYMENTS_SANDBOX_WEBHOOK_SECRET`.
+
+## Currencies
+
+Drivers can pay in **US dollars or Indian rupees**, and can pay any amount:
+
+- Prices are authored in USD; the footer switcher (and the one next to every
+  Pay button) converts the display and the charge.
+- The conversion rate lives in `src/lib/currency.ts` (`USD_TO_INR`) so a quote
+  can never drift from the amount charged.
+- Booking payments and the **Add parking credit** page (`/topup`) both create a
+  single custom-amount Paddle transaction server-side, so there is no upper
+  limit tied to catalog pricing. Booking amounts are always recalculated on the
+  server — the browser never dictates what is charged.

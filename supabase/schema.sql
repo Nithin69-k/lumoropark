@@ -248,16 +248,16 @@ alter table public.disputes add constraint disputes_booking_id_fkey FOREIGN KEY 
 alter table public.host_wallets add constraint host_wallets_host_id_fkey FOREIGN KEY (host_id) REFERENCES profiles(id) ON DELETE CASCADE;
 alter table public.messages add constraint messages_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE;
 alter table public.messages add constraint messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-alter table public.notifications add constraint notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.notifications add constraint notifications_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE;
+alter table public.notifications add constraint notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.parking_spaces add constraint parking_spaces_host_id_fkey FOREIGN KEY (host_id) REFERENCES profiles(id) ON DELETE CASCADE;
 alter table public.payout_requests add constraint payout_requests_host_id_fkey FOREIGN KEY (host_id) REFERENCES profiles(id) ON DELETE CASCADE;
 alter table public.profile_contacts add constraint profile_contacts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.profiles add constraint profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
-alter table public.reviews add constraint reviews_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE;
-alter table public.reviews add constraint reviews_reviewee_id_fkey FOREIGN KEY (reviewee_id) REFERENCES profiles(id);
-alter table public.reviews add constraint reviews_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES profiles(id);
 alter table public.reviews add constraint reviews_space_id_fkey FOREIGN KEY (space_id) REFERENCES parking_spaces(id) ON DELETE SET NULL;
+alter table public.reviews add constraint reviews_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES profiles(id);
+alter table public.reviews add constraint reviews_reviewee_id_fkey FOREIGN KEY (reviewee_id) REFERENCES profiles(id);
+alter table public.reviews add constraint reviews_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE;
 alter table public.subscriptions add constraint subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.user_roles add constraint user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.wallet_transactions add constraint wallet_transactions_host_id_fkey FOREIGN KEY (host_id) REFERENCES profiles(id) ON DELETE CASCADE;
@@ -728,7 +728,6 @@ CREATE OR REPLACE FUNCTION public.get_booking_charge(p_booking_id uuid, p_env te
  SET search_path TO 'public'
 AS $function$
 DECLARE b public.bookings; v_base numeric; v_fee numeric; v_res numeric := 1; v_rate numeric;
-        v_credits integer;
 BEGIN
   SELECT * INTO b FROM public.bookings WHERE id = p_booking_id;
   IF b.id IS NULL THEN RAISE EXCEPTION 'Booking not found'; END IF;
@@ -736,13 +735,9 @@ BEGIN
   v_base := round(b.total_price::numeric, 2);
   v_rate := public.host_commission_rate(b.host_id, p_env);
   v_fee := round(v_base * v_rate, 2);
-  IF v_base + v_fee > 500 THEN
-    RAISE EXCEPTION 'Bookings above $500 cannot be paid online yet. Please shorten the reservation.';
-  END IF;
-  -- Parking is sold in whole $1 credits, so the quote is rounded up to match
-  -- exactly what the checkout will charge.
-  v_credits := GREATEST(1, ceil(v_base + v_fee)::integer);
-  RETURN QUERY SELECT v_base, v_fee, v_res, (v_credits + v_res)::numeric, v_credits;
+  -- Payments are now created as a single custom-amount transaction, so the
+  -- old whole-dollar credit rounding and the $500 ceiling no longer apply.
+  RETURN QUERY SELECT v_base, v_fee, v_res, round(v_base + v_fee + v_res, 2), GREATEST(1, ceil(v_base + v_fee)::integer);
 END; $function$
 ;
 
