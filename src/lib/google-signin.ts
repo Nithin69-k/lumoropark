@@ -29,7 +29,7 @@ export async function signInWithGoogle(redirectTo: string): Promise<GoogleSignIn
     try {
       const { lovable } = await import("@/integrations/lovable");
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: redirectTo,
       });
       if (result.error) return { error: { message: result.error.message } };
       return { redirected: Boolean((result as { redirected?: boolean }).redirected) };
