@@ -35,8 +35,6 @@ Minimum set for a fully working deployment:
 - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - `VITE_RAZORPAY_KEY_ID` (an `rzp_live_...` key for production)
 - `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
-- `PAYMENTS_LIVE_WEBHOOK_SECRET`, `PAYMENTS_SANDBOX_WEBHOOK_SECRET`
-- `LOVABLE_API_KEY`
 
 Without `SUPABASE_SERVICE_ROLE_KEY`, payment settlement, expiry of stale
 checkout holds and account deletion will fail. Without the Razorpay keys,
@@ -68,7 +66,7 @@ sign-in will bounce back to the old domain.
 1. `/` loads with the map placeholder, then the interactive map.
 2. `/robots.txt` and `/sitemap.xml` show your Vercel domain.
 3. Sign up, confirm email, sign in.
-4. Create a listing, book it, pay with the test card `4242 4242 4242 4242`.
+4. Create a listing, book it, pay with the Razorpay test card `4111 1111 1111 1111` (any future expiry, any CVV, OTP `1234`).
 5. Check the booking flips to confirmed (this proves the webhook and the
    service-role key are wired correctly).
 6. `/profile` → billing history shows the payment.
