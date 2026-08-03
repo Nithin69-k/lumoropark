@@ -60,7 +60,10 @@ export async function rzpJson<T>(
   const text = await res.text();
   if (!res.ok) {
     console.error("Razorpay API error", path, res.status, text);
-    if (res.status === 401) throw new Error("Payments are not configured correctly.");
+    if (res.status === 401) {
+      console.error("RZP_DEBUG keyId=", getKeyId(), "secretLen=", (process.env["RAZORPAY_KEY_SECRET"] ?? "").length);
+      throw new Error("Payments are not configured correctly.");
+    }
     throw new Error(friendlyError);
   }
   return JSON.parse(text) as T;
