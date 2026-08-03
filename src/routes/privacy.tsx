@@ -14,7 +14,7 @@ export const Route = createFileRoute("/privacy")({
       { property: "og:title", content: "Privacy Policy | LUMORO X PARK" },
       {
         property: "og:description",
-        content: "Data we collect, payment processing by Paddle, sharing with Hosts, retention and your rights.",
+        content: "Data we collect, payment processing by Razorpay, sharing with Hosts, retention and your rights.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -70,7 +70,7 @@ function PrivacyPage() {
       <LegalSection heading="4. Payment processing">
         <p>
           All financial data, including credit cards and banking details for Host payouts, is processed securely
-          through our Merchant of Record, Paddle. LUMORO X PARK does not store raw credit card numbers or
+          through our payment gateway, Razorpay. LUMORO X PARK does not store raw credit card numbers, UPI IDs or
           banking credentials on its own servers.
         </p>
       </LegalSection>
@@ -81,7 +81,7 @@ function PrivacyPage() {
           items={[
             "the booked Host — necessary vehicle details (licence plate, make, model) and Driver contact info, to ensure legitimate property access and security verification;",
             "the Driver — the Host's contact details and space access instructions for the booked window;",
-            "Paddle, our Merchant of Record, for the sale of our products, subscription management, payments, tax compliance and invoicing;",
+            "Razorpay, our payment gateway, for processing payments, subscription management, refunds and invoicing;",
             "service providers and subprocessors that host our infrastructure, provide mapping, and support customer service;",
             "professional advisers (legal and accounting) and authorities, where required by law.",
           ]}

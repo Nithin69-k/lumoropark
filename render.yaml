@@ -19,7 +19,7 @@ services:
         sync: false
       - key: VITE_SUPABASE_PROJECT_ID
         sync: false
-      - key: VITE_PAYMENTS_CLIENT_TOKEN
+      - key: VITE_RAZORPAY_KEY_ID
         sync: false
       - key: SUPABASE_URL
         sync: false
@@ -27,11 +27,7 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: PADDLE_SANDBOX_API_KEY
+      - key: RAZORPAY_KEY_SECRET
         sync: false
-      - key: PADDLE_LIVE_API_KEY
-        sync: false
-      - key: PAYMENTS_SANDBOX_WEBHOOK_SECRET
-        sync: false
-      - key: PAYMENTS_LIVE_WEBHOOK_SECRET
+      - key: RAZORPAY_WEBHOOK_SECRET
         sync: false
