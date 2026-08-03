@@ -171,8 +171,8 @@ prefixed with `VITE_` is baked into the browser bundle at build time.
 The server calls the Razorpay API directly using `RAZORPAY_KEY_SECRET`.
 Point your Razorpay webhook at
 `https://your-domain/api/public/payments/razorpay-webhook?env=live` (and the sandbox one
-at `...?env=sandbox`) and store the signing secrets in
-`PAYMENTS_LIVE_WEBHOOK_SECRET` / `PAYMENTS_SANDBOX_WEBHOOK_SECRET`.
+at `...?env=sandbox`) and store the signing secret in
+`RAZORPAY_WEBHOOK_SECRET`.
 
 ## Currencies
 
