@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
 import { SUPPORT_EMAIL } from "@/lib/support";
 
 export function SiteFooter() {
@@ -14,11 +15,13 @@ export function SiteFooter() {
               {SUPPORT_EMAIL}
             </a>
           </p>
+          <CurrencySwitcher className="mt-2" />
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           <Link to="/pricing" className="transition-colors hover:text-foreground">
             Pricing
           </Link>
+
           <Link to="/help" className="transition-colors hover:text-foreground">
             Help Center
           </Link>

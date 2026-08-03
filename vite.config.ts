@@ -8,9 +8,10 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
-  // Inside Lovable this is ignored (Cloudflare is forced). Outside Lovable —
-  // e.g. on Vercel — the build targets Vercel's serverless runtime.
-  nitro: { preset: "vercel" },
+  // Inside Lovable this is ignored (Cloudflare is forced). Outside Lovable the
+  // preset follows NITRO_PRESET, so the same repo deploys to Vercel (default),
+  // Netlify (`netlify`) or Render/any Node host (`node-server`).
+  nitro: { preset: process.env.NITRO_PRESET ?? "vercel" },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
