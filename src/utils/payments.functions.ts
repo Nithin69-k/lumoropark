@@ -1,18 +1,186 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { gatewayFetch, getPaddleClient, type PaddleEnv } from "@/lib/paddle.server";
+import {
+  getKeyId,
+  getPaymentEnv,
+  rzpFetch,
+  rzpJson,
+  toPaise,
+  verifyPaymentSignature,
+  verifySubscriptionSignature,
+} from "@/lib/razorpay.server";
+import { INR_PER_USD, MIN_CHARGE_INR, MAX_CHARGE_INR, PRO_PLANS, type ProPlanKey } from "@/lib/pricing";
 
-export const resolvePaddlePrice = createServerFn({ method: "GET" })
-  .inputValidator((data: { priceId: string; environment: PaddleEnv }) => data)
-  .handler(async ({ data }) => {
-    const response = await gatewayFetch(
-      data.environment,
-      `/prices?external_id=${encodeURIComponent(data.priceId)}`,
-    );
-    const result = (await response.json()) as { data?: Array<{ id: string }> };
-    if (!result.data?.length) throw new Error("Price not found");
-    return result.data[0].id;
+type RzpOrder = { id: string; amount: number; currency: string };
+
+export type CheckoutOrder = {
+  keyId: string;
+  orderId: string;
+  /** Amount in paise, exactly what Razorpay will charge. */
+  amount: number;
+  currency: "INR";
+};
+
+function usdToInr(usd: number): number {
+  return Math.round(usd * INR_PER_USD * 100) / 100;
+}
+
+async function createOrder(input: {
+  amountInRupees: number;
+  receipt: string;
+  notes: Record<string, string>;
+}): Promise<CheckoutOrder> {
+  const paise = toPaise(input.amountInRupees);
+  // Razorpay rejects anything under 100 paise (₹1).
+  if (!Number.isFinite(paise) || paise < 100) {
+    throw new Error("That amount is too small to charge online.");
+  }
+  if (paise > toPaise(MAX_CHARGE_INR)) {
+    throw new Error("That amount is above the online payment limit.");
+  }
+
+  const order = await rzpJson<RzpOrder>(
+    "/orders",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        amount: paise,
+        currency: "INR",
+        receipt: input.receipt.slice(0, 40),
+        notes: input.notes,
+      }),
+    },
+    "Could not start the payment. Please try again.",
+  );
+
+  return { keyId: getKeyId(), orderId: order.id, amount: order.amount, currency: "INR" };
+}
+
+/* ------------------------------------------------------------------ *
+ * One-off payments: bookings and wallet top-ups
+ * ------------------------------------------------------------------ */
+
+/**
+ * Prices a booking from the database and opens it as a Razorpay order. The
+ * amount is always derived server-side — never trusted from the browser.
+ */
+export const createBookingOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { bookingId: string }) => data)
+  .handler(async ({ data, context }): Promise<CheckoutOrder> => {
+    const { data: quote, error } = await context.supabase.rpc("get_booking_charge", {
+      p_booking_id: data.bookingId,
+      p_env: getPaymentEnv(),
+    });
+    if (error) throw new Error(error.message);
+    const row = (Array.isArray(quote) ? quote[0] : quote) as { total: number | string } | null;
+    if (!row) throw new Error("Could not price this booking");
+
+    return createOrder({
+      amountInRupees: usdToInr(Number(row.total)),
+      receipt: `bk_${data.bookingId.slice(0, 30)}`,
+      notes: { bookingId: data.bookingId, userId: context.userId, kind: "booking" },
+    });
   });
+
+/** Opens a Razorpay order for any amount the driver chooses (parking credit). */
+export const createTopupOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { amount: number }) => data)
+  .handler(async ({ data, context }): Promise<CheckoutOrder> => {
+    const amount = Math.round(Number(data.amount) * 100) / 100;
+    if (!Number.isFinite(amount) || amount < MIN_CHARGE_INR || amount > MAX_CHARGE_INR) {
+      throw new Error(`Enter an amount between ₹${MIN_CHARGE_INR} and ₹${MAX_CHARGE_INR}.`);
+    }
+    return createOrder({
+      amountInRupees: amount,
+      receipt: `tp_${context.userId.slice(0, 30)}`,
+      notes: { userId: context.userId, kind: "topup" },
+    });
+  });
+
+export type VerifyResult = { verified: true; settled: boolean };
+
+/**
+ * Verifies the Razorpay signature returned by the checkout modal and, for a
+ * booking, confirms the reservation. Nothing is marked paid unless the
+ * signature matches.
+ */
+export const verifyPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: {
+      razorpayOrderId: string;
+      razorpayPaymentId: string;
+      razorpaySignature: string;
+      bookingId?: string;
+    }) => data,
+  )
+  .handler(async ({ data, context }): Promise<VerifyResult> => {
+    if (!data.razorpayOrderId || !data.razorpayPaymentId || !data.razorpaySignature) {
+      throw new Error("Payment details are incomplete.");
+    }
+    const ok = verifyPaymentSignature({
+      orderId: data.razorpayOrderId,
+      paymentId: data.razorpayPaymentId,
+      signature: data.razorpaySignature,
+    });
+    if (!ok) {
+      console.error("Razorpay signature mismatch", data.razorpayOrderId);
+      throw new Error("We could not verify this payment. You have not been charged twice — contact support if money left your account.");
+    }
+
+    if (!data.bookingId) return { verified: true, settled: false };
+
+    // Read the real amount back from Razorpay rather than trusting the client.
+    const payment = await rzpJson<{ amount: number; status: string }>(
+      `/payments/${encodeURIComponent(data.razorpayPaymentId)}`,
+      undefined,
+      "Could not confirm the payment with the bank.",
+    );
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: outcome, error } = await supabaseAdmin.rpc("settle_booking_payment", {
+      p_booking_id: data.bookingId,
+      p_transaction_id: data.razorpayPaymentId,
+      p_amount_charged: payment.amount / 100 / INR_PER_USD,
+      p_env: getPaymentEnv(),
+    });
+    if (error) throw new Error(error.message);
+
+    // Somebody else confirmed the slot while this driver was paying.
+    if (outcome === "conflict") {
+      await refundPayment(
+        data.razorpayPaymentId,
+        "Parking slot was taken before payment completed",
+      );
+      await supabaseAdmin.rpc("mark_booking_refunded", {
+        p_booking_id: data.bookingId,
+        p_refund_id: undefined,
+      });
+      throw new Error("That slot was just taken — your payment is being refunded automatically.");
+    }
+
+    void context.userId;
+    return { verified: true, settled: true };
+  });
+
+async function refundPayment(paymentId: string, reason: string): Promise<string | null> {
+  const res = await rzpFetch(`/payments/${encodeURIComponent(paymentId)}/refund`, {
+    method: "POST",
+    body: JSON.stringify({ speed: "normal", notes: { reason: reason.slice(0, 200) } }),
+  });
+  if (!res.ok) {
+    console.error("Refund failed", paymentId, await res.text());
+    return null;
+  }
+  const json = (await res.json()) as { id?: string };
+  return json.id ?? null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Cancellations and refunds
+ * ------------------------------------------------------------------ */
 
 export type CancelBookingResult = {
   status: string;
@@ -23,11 +191,11 @@ export type CancelBookingResult = {
 
 /**
  * Cancels a booking under the host's cancellation policy and, when a refund is
- * owed, files the refund with the payment provider.
+ * owed, files it with Razorpay.
  */
 export const cancelBookingWithRefund = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { bookingId: string; reason?: string; environment: PaddleEnv }) => data)
+  .inputValidator((data: { bookingId: string; reason?: string }) => data)
   .handler(async ({ data, context }): Promise<CancelBookingResult> => {
     const { data: row, error } = await context.supabase.rpc("cancel_booking", {
       p_booking_id: data.bookingId,
@@ -48,24 +216,16 @@ export const cancelBookingWithRefund = createServerFn({ method: "POST" })
     let refundRequested = false;
 
     if (refundAmount > 0 && booking?.paddle_transaction_id) {
-      const res = await gatewayFetch(data.environment, "/adjustments", {
-        method: "POST",
-        body: JSON.stringify({
-          action: "refund",
-          transaction_id: booking.paddle_transaction_id,
-          reason: data.reason?.slice(0, 200) || "Booking cancelled within the cancellation policy",
-          type: "full",
-        }),
-      });
-      if (!res.ok) {
-        console.error("Refund request failed", await res.text());
-      } else {
+      const refundId = await refundPayment(
+        booking.paddle_transaction_id,
+        data.reason || "Booking cancelled within the cancellation policy",
+      );
+      if (refundId) {
         refundRequested = true;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const payload = (await res.json()) as { data?: { id?: string } };
         await supabaseAdmin.rpc("mark_booking_refunded", {
           p_booking_id: data.bookingId,
-          p_refund_id: payload.data?.id ?? undefined,
+          p_refund_id: refundId,
         });
       }
     }
@@ -78,201 +238,154 @@ export const cancelBookingWithRefund = createServerFn({ method: "POST" })
     };
   });
 
-/** Opens the payment provider's hosted portal so a subscriber can manage billing. */
-export const openBillingPortal = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { environment: PaddleEnv }) => data)
-  .handler(async ({ data, context }): Promise<string> => {
-    const { data: sub, error } = await context.supabase
-      .from("subscriptions")
-      .select("paddle_customer_id, paddle_subscription_id")
-      .eq("user_id", context.userId)
-      .eq("environment", data.environment)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!sub?.paddle_customer_id) throw new Error("No subscription found for your account");
+/* ------------------------------------------------------------------ *
+ * Host Pro subscriptions
+ * ------------------------------------------------------------------ */
 
-    const paddle = getPaddleClient(data.environment);
-    const session = await paddle.customerPortalSessions.create(sub.paddle_customer_id, [
-      sub.paddle_subscription_id,
-    ]);
-    const url = session.urls?.general?.overview;
-    if (!url) throw new Error("Could not open the billing portal");
-    return url;
+type RzpPlan = { id: string; notes?: Record<string, string> };
+
+/** Finds the Razorpay plan for a tier, creating it on first use. */
+async function ensurePlan(planKey: ProPlanKey): Promise<string> {
+  const plan = PRO_PLANS[planKey];
+  const list = await rzpJson<{ items?: RzpPlan[] }>(
+    "/plans?count=100",
+    undefined,
+    "Plans are unavailable right now.",
+  );
+  const existing = list.items?.find((p) => p.notes?.["plan_key"] === planKey);
+  if (existing) return existing.id;
+
+  const created = await rzpJson<RzpPlan>(
+    "/plans",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        period: plan.period,
+        interval: 1,
+        item: {
+          name: plan.name,
+          amount: toPaise(plan.amountInr),
+          currency: "INR",
+          description: "LumoroX Park Host Pro",
+        },
+        notes: { plan_key: planKey },
+      }),
+    },
+    "Could not set up the plan. Please try again.",
+  );
+  return created.id;
+}
+
+export type SubscriptionCheckout = { keyId: string; subscriptionId: string };
+
+/** Creates a Razorpay subscription for Host Pro and returns it for checkout. */
+export const createProSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { plan: ProPlanKey }) => data)
+  .handler(async ({ data, context }): Promise<SubscriptionCheckout> => {
+    const planKey: ProPlanKey = data.plan === "host_pro_yearly" ? "host_pro_yearly" : "host_pro_monthly";
+    const planId = await ensurePlan(planKey);
+
+    const subscription = await rzpJson<{ id: string }>(
+      "/subscriptions",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          plan_id: planId,
+          total_count: planKey === "host_pro_yearly" ? 10 : 120,
+          customer_notify: 1,
+          notes: { userId: context.userId, plan_key: planKey },
+        }),
+      },
+      "Could not start the subscription. Please try again.",
+    );
+
+    return { keyId: getKeyId(), subscriptionId: subscription.id };
   });
 
-
-/**
- * Switches an active Host Pro subscription between the monthly and yearly
- * plan, pro-rating the change immediately.
- */
-export const changeSubscriptionPlan = createServerFn({ method: "POST" })
+/** Verifies a subscription checkout and records the plan against the account. */
+export const verifySubscriptionPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { priceId: string; environment: PaddleEnv }) => data)
-  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+  .inputValidator(
+    (data: {
+      razorpaySubscriptionId: string;
+      razorpayPaymentId: string;
+      razorpaySignature: string;
+    }) => data,
+  )
+  .handler(async ({ data, context }): Promise<{ verified: true }> => {
+    if (!data.razorpaySubscriptionId || !data.razorpayPaymentId || !data.razorpaySignature) {
+      throw new Error("Payment details are incomplete.");
+    }
+    const ok = verifySubscriptionSignature({
+      subscriptionId: data.razorpaySubscriptionId,
+      paymentId: data.razorpayPaymentId,
+      signature: data.razorpaySignature,
+    });
+    if (!ok) throw new Error("We could not verify this subscription payment.");
+
+    const sub = await rzpJson<{
+      id: string;
+      status: string;
+      customer_id?: string;
+      current_start?: number | null;
+      current_end?: number | null;
+      notes?: Record<string, string>;
+    }>(
+      `/subscriptions/${encodeURIComponent(data.razorpaySubscriptionId)}`,
+      undefined,
+      "Could not confirm the subscription.",
+    );
+
+    const planKey = (sub.notes?.["plan_key"] as ProPlanKey | undefined) ?? "host_pro_monthly";
+    const toIso = (s?: number | null) => (s ? new Date(s * 1000).toISOString() : null);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("subscriptions").upsert(
+      {
+        user_id: context.userId,
+        paddle_subscription_id: sub.id,
+        paddle_customer_id: sub.customer_id ?? "na",
+        product_id: "host_pro",
+        price_id: planKey,
+        status: sub.status === "authenticated" ? "active" : sub.status,
+        current_period_start: toIso(sub.current_start),
+        current_period_end: toIso(sub.current_end),
+        environment: getPaymentEnv(),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "paddle_subscription_id" },
+    );
+    if (error) throw new Error(error.message);
+    return { verified: true };
+  });
+
+/** Cancels Host Pro at the end of the paid period. */
+export const cancelProSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ ok: true }> => {
     const { data: sub, error } = await context.supabase
       .from("subscriptions")
       .select("paddle_subscription_id, status")
       .eq("user_id", context.userId)
-      .eq("environment", data.environment)
+      .eq("environment", getPaymentEnv())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!sub?.paddle_subscription_id) throw new Error("No subscription found for your account");
-    if (!["active", "trialing", "past_due"].includes(sub.status)) {
-      throw new Error("Your plan must be active before you can switch it");
-    }
 
-    const priceRes = await gatewayFetch(
-      data.environment,
-      `/prices?external_id=${encodeURIComponent(data.priceId)}`,
+    await rzpJson(
+      `/subscriptions/${encodeURIComponent(sub.paddle_subscription_id)}/cancel`,
+      { method: "POST", body: JSON.stringify({ cancel_at_cycle_end: 1 }) },
+      "Could not cancel your plan. Please try again.",
     );
-    const priceJson = (await priceRes.json()) as { data?: Array<{ id: string }> };
-    const paddlePriceId = priceJson.data?.[0]?.id;
-    if (!paddlePriceId) throw new Error("That plan is not available right now");
 
-    const res = await gatewayFetch(
-      data.environment,
-      `/subscriptions/${sub.paddle_subscription_id}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify({
-          items: [{ price_id: paddlePriceId, quantity: 1 }],
-          proration_billing_mode: "prorated_immediately",
-        }),
-      },
-    );
-    if (!res.ok) {
-      const detail = await res.text();
-      console.error("Plan change failed", detail);
-      throw new Error("Could not switch your plan. Please try again or use the billing portal.");
-    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin
+      .from("subscriptions")
+      .update({ cancel_at_period_end: true, updated_at: new Date().toISOString() })
+      .eq("paddle_subscription_id", sub.paddle_subscription_id);
+
     return { ok: true };
-  });
-
-/* ------------------------------------------------------------------ *
- * Custom-amount payments (any amount, in USD or INR)
- * ------------------------------------------------------------------ */
-
-type CurrencyCode = "USD" | "INR";
-const USD_TO_INR = 88;
-const MIN_CHARGE: Record<CurrencyCode, number> = { USD: 0.7, INR: 60 };
-const MAX_CHARGE: Record<CurrencyCode, number> = { USD: 10000, INR: 880000 };
-
-/** Resolves the Paddle product a custom (non-catalog) price hangs off. */
-async function resolveProductId(env: PaddleEnv, externalId: string): Promise<string> {
-  const res = await gatewayFetch(env, `/products?external_id=${encodeURIComponent(externalId)}`);
-  const json = (await res.json()) as { data?: Array<{ id: string }> };
-  const id = json.data?.[0]?.id;
-  if (!id) throw new Error("Payment catalog is not configured yet");
-  return id;
-}
-
-async function createTransaction(input: {
-  env: PaddleEnv;
-  productId: string;
-  description: string;
-  amount: number;
-  currency: CurrencyCode;
-  customData: Record<string, string>;
-  email?: string;
-}): Promise<string> {
-  const res = await gatewayFetch(input.env, "/transactions", {
-    method: "POST",
-    body: JSON.stringify({
-      items: [
-        {
-          quantity: 1,
-          price: {
-            description: input.description,
-            name: input.description.slice(0, 50),
-            product_id: input.productId,
-            unit_price: {
-              amount: String(Math.round(input.amount * 100)),
-              currency_code: input.currency,
-            },
-            quantity: { minimum: 1, maximum: 1 },
-          },
-        },
-      ],
-      currency_code: input.currency,
-      collection_mode: "automatic",
-      custom_data: input.customData,
-    }),
-  });
-  if (!res.ok) {
-    console.error("Could not create transaction", await res.text());
-    throw new Error("Could not start the payment. Please try again.");
-  }
-  const json = (await res.json()) as { data?: { id?: string } };
-  if (!json.data?.id) throw new Error("Could not start the payment. Please try again.");
-  return json.data.id;
-}
-
-/**
- * Prices a booking server-side and opens it as a single custom-amount Paddle
- * transaction in the driver's currency. The amount is always derived from the
- * database — never from the browser.
- */
-export const createBookingCharge = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { bookingId: string; currency: CurrencyCode; environment: PaddleEnv }) => data)
-  .handler(async ({ data, context }): Promise<{ transactionId: string; amount: number; currency: CurrencyCode }> => {
-    const currency: CurrencyCode = data.currency === "INR" ? "INR" : "USD";
-
-    const { data: quote, error } = await context.supabase.rpc("get_booking_charge", {
-      p_booking_id: data.bookingId,
-      p_env: data.environment,
-    });
-    if (error) throw new Error(error.message);
-    const row = (Array.isArray(quote) ? quote[0] : quote) as { total: number | string } | null;
-    if (!row) throw new Error("Could not price this booking");
-
-    const usdTotal = Number(row.total);
-    const amount = Math.round((currency === "INR" ? usdTotal * USD_TO_INR : usdTotal) * 100) / 100;
-    if (!(amount >= MIN_CHARGE[currency]) || amount > MAX_CHARGE[currency]) {
-      throw new Error("This booking amount cannot be charged online.");
-    }
-
-    const productId = await resolveProductId(data.environment, "wallet_topup");
-    const transactionId = await createTransaction({
-      env: data.environment,
-      productId,
-      description: "LumoroX Park reservation",
-      amount,
-      currency,
-      customData: { bookingId: data.bookingId, userId: context.userId },
-    });
-    return { transactionId, amount, currency };
-  });
-
-/**
- * Opens a payment for any amount the driver chooses (parking credit top-up),
- * in either supported currency.
- */
-export const createCustomCharge = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: { amount: number; currency: CurrencyCode; environment: PaddleEnv }) => data)
-  .handler(async ({ data, context }): Promise<{ transactionId: string }> => {
-    const currency: CurrencyCode = data.currency === "INR" ? "INR" : "USD";
-    const amount = Math.round(Number(data.amount) * 100) / 100;
-    if (!Number.isFinite(amount) || amount < MIN_CHARGE[currency] || amount > MAX_CHARGE[currency]) {
-      throw new Error(
-        `Enter an amount between ${MIN_CHARGE[currency]} and ${MAX_CHARGE[currency]} ${currency}.`,
-      );
-    }
-
-    const productId = await resolveProductId(data.environment, "wallet_topup");
-    const transactionId = await createTransaction({
-      env: data.environment,
-      productId,
-      description: "LumoroX Park parking credit",
-      amount,
-      currency,
-      customData: { userId: context.userId, kind: "topup" },
-    });
-    return { transactionId };
   });

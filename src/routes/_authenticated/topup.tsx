@@ -6,13 +6,10 @@ import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CurrencySwitcher } from "@/components/CurrencySwitcher";
-import { useCurrency } from "@/hooks/useCurrency";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { supabase } from "@/integrations/supabase/client";
-import { formatMoney, MIN_CHARGE } from "@/lib/currency";
-import { getPaddleEnvironment } from "@/lib/paddle";
-import { createCustomCharge } from "@/utils/payments.functions";
+import { formatInr, MIN_CHARGE_INR } from "@/lib/currency";
+import { createTopupOrder, verifyPayment } from "@/utils/payments.functions";
 
 export const Route = createFileRoute("/_authenticated/topup")({
   head: () => ({
@@ -20,14 +17,10 @@ export const Route = createFileRoute("/_authenticated/topup")({
       { title: "Add parking credit | LumoroX Park" },
       {
         name: "description",
-        content:
-          "Top up your LumoroX Park balance with any amount, in US dollars or Indian rupees.",
+        content: "Top up your LumoroX Park balance with any amount, paid securely in rupees.",
       },
       { property: "og:title", content: "Add parking credit | LumoroX Park" },
-      {
-        property: "og:description",
-        content: "Pay any amount you like, in dollars or rupees.",
-      },
+      { property: "og:description", content: "Pay any amount you like, securely in rupees." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -35,35 +28,49 @@ export const Route = createFileRoute("/_authenticated/topup")({
   component: TopUpPage,
 });
 
-const PRESETS: Record<"USD" | "INR", number[]> = {
-  USD: [10, 25, 50, 100],
-  INR: [500, 1000, 2500, 5000],
-};
+const PRESETS = [500, 1000, 2500, 5000];
 
 function TopUpPage() {
-  const { currency } = useCurrency();
   const [amount, setAmount] = useState("");
-  const { openCheckout, loading } = usePaddleCheckout();
+  const { openCheckout, loading } = useRazorpayCheckout();
   const [starting, setStarting] = useState(false);
 
   const parsed = Number(amount);
-  const valid = Number.isFinite(parsed) && parsed >= MIN_CHARGE[currency];
+  const valid = Number.isFinite(parsed) && parsed >= MIN_CHARGE_INR;
 
   async function pay() {
     if (!valid) {
-      toast.error(`Minimum is ${formatMoney(MIN_CHARGE[currency], currency)}`);
+      toast.error(`Minimum is ${formatInr(MIN_CHARGE_INR)}`);
       return;
     }
     setStarting(true);
     try {
       const { data } = await supabase.auth.getUser();
-      const { transactionId } = await createCustomCharge({
-        data: { amount: parsed, currency, environment: getPaddleEnvironment() },
-      });
+      const order = await createTopupOrder({ data: { amount: parsed } });
+
       await openCheckout({
-        transactionId,
-        customerEmail: data.user?.email ?? undefined,
-        successUrl: `${window.location.origin}/bookings`,
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        description: "LumoroX Park parking credit",
+        prefill: { email: data.user?.email ?? undefined },
+        onSuccess: async (res) => {
+          try {
+            await verifyPayment({
+              data: {
+                razorpayOrderId: res.razorpay_order_id ?? order.orderId,
+                razorpayPaymentId: res.razorpay_payment_id,
+                razorpaySignature: res.razorpay_signature,
+              },
+            });
+            toast.success("Payment received — credit added to your account");
+            setAmount("");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "We could not confirm the payment");
+          }
+        },
+        onDismiss: () => toast.message("Payment cancelled"),
+        onFailure: (message) => toast.error(message),
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not start the payment");
@@ -78,24 +85,21 @@ function TopUpPage() {
         <Wallet className="h-6 w-6 text-primary" /> Add parking credit
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Pay any amount you like. Choose the currency you want to be charged in.
+        Pay any amount you like. Cards, UPI, net banking and wallets are all accepted.
       </p>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-card">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="amount">Amount</Label>
-          <CurrencySwitcher />
-        </div>
+        <Label htmlFor="amount">Amount (₹)</Label>
         <Input
           id="amount"
           className="mt-2"
           inputMode="decimal"
-          placeholder={String(PRESETS[currency][0])}
+          placeholder={String(PRESETS[0])}
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
         />
         <div className="mt-3 flex flex-wrap gap-2">
-          {PRESETS[currency].map((v) => (
+          {PRESETS.map((v) => (
             <Button
               key={v}
               type="button"
@@ -103,18 +107,15 @@ function TopUpPage() {
               size="sm"
               onClick={() => setAmount(String(v))}
             >
-              {formatMoney(v, currency)}
+              {formatInr(v)}
             </Button>
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Minimum {formatMoney(MIN_CHARGE[currency], currency)}. You'll be charged exactly the
-          amount shown on the checkout.
+          Minimum {formatInr(MIN_CHARGE_INR)}. You'll be charged exactly the amount shown.
         </p>
         <Button className="mt-4 w-full" onClick={pay} disabled={!valid || loading || starting}>
-          {loading || starting
-            ? "Opening…"
-            : `Pay ${valid ? formatMoney(parsed, currency) : ""}`.trim()}
+          {loading || starting ? "Opening…" : `Pay ${valid ? formatInr(parsed) : ""}`.trim()}
         </Button>
       </div>
     </div>

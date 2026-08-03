@@ -91,30 +91,21 @@ function RefundPolicyPage() {
 
       <LegalSection heading="5. How refunds are processed">
         <p>
-          Our order process is conducted by our online reseller Paddle.com, which is the Merchant of Record for
-          all our orders. Approved refunds are returned to the original payment method by Paddle and typically
-          appear within 5–10 business days, depending on your bank or card issuer.
+          Payments on LumoroX Park are processed in Indian rupees by our payment gateway, Razorpay.
+          Approved refunds are returned automatically to the original payment method — card, UPI,
+          net banking or wallet — and typically appear within 5–7 business days, depending on your
+          bank or card issuer.
         </p>
         <p>
-          You can request a refund or a billing receipt directly from Paddle at{" "}
+          To request a refund or a billing receipt, contact our support team through the in-app
+          support page or email{" "}
           <a
-            href="https://paddle.net"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:lumoroxpark@gmail.com"
             className="font-medium text-primary underline underline-offset-4"
           >
-            paddle.net
+            lumoroxpark@gmail.com
           </a>
-          , or by contacting our support team through the app. Paddle's own refund terms are available in the{" "}
-          <a
-            href="https://www.paddle.com/legal/refund-policy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary underline underline-offset-4"
-          >
-            Paddle Refund Policy
-          </a>
-          .
+          . We respond to every refund request within 2 business days.
         </p>
       </LegalSection>
     </LegalPage>

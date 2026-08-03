@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getPaymentEnvironment } from "@/lib/razorpay";
 
 export type MySpace = {
   id: string;
@@ -53,7 +53,7 @@ export function policyLabel(p: string | null | undefined) {
 export type ListingQuota = { used: number; max_allowed: number; is_pro: boolean };
 
 export async function getMyListingQuota(): Promise<ListingQuota> {
-  const { data, error } = await supabase.rpc("my_listing_quota", { p_env: getPaddleEnvironment() } as never);
+  const { data, error } = await supabase.rpc("my_listing_quota", { p_env: getPaymentEnvironment() } as never);
   if (error) throw error;
   const row = (Array.isArray(data) ? data[0] : data) as ListingQuota | undefined;
   return {
@@ -80,7 +80,7 @@ export async function createSpace(input: CreateSpaceInput): Promise<string> {
     p_has_sensor: input.has_sensor,
     p_photos: input.photos,
     p_cancellation_policy: input.cancellation_policy,
-    p_env: getPaddleEnvironment(),
+    p_env: getPaymentEnvironment(),
   } as never);
   if (error) throw error;
   return data as string;

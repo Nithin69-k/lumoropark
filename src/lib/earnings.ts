@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getPaymentEnvironment } from "@/lib/razorpay";
 
 export type Wallet = {
   lifetime_earnings: number;
@@ -111,7 +111,7 @@ export type EarningsPoint = { month: string; bookings: number; gross: number; ne
 
 /** Host Pro only — monthly earnings breakdown for the last 12 months. */
 export async function getHostEarningsAnalytics(): Promise<EarningsPoint[]> {
-  const { data, error } = await supabase.rpc("host_earnings_analytics", { p_env: getPaddleEnvironment() } as never);
+  const { data, error } = await supabase.rpc("host_earnings_analytics", { p_env: getPaymentEnvironment() } as never);
   if (error) throw error;
   return ((data ?? []) as EarningsPoint[]).map((r) => ({
     month: r.month,
