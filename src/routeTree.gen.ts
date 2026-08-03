@@ -31,6 +31,7 @@ import { Route as AuthenticatedForbiddenRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedTopupRouteImport } from './routes/_authenticated/topup'
 import { Route as GuidesRvParkingRouteImport } from './routes/guides.rv-parking'
 import { Route as SpaceIdRouteImport } from './routes/space.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -158,6 +159,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTopupRoute = AuthenticatedTopupRouteImport.update({
+  id: '/topup',
+  path: '/topup',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const GuidesRvParkingRoute = GuidesRvParkingRouteImport.update({
   id: '/guides/rv-parking',
   path: '/guides/rv-parking',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/topup': typeof AuthenticatedTopupRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/topup': typeof AuthenticatedTopupRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -334,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/topup': typeof AuthenticatedTopupRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -373,6 +382,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/topup'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/profile'
+    | '/topup'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/topup'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -644,6 +656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/topup': {
+      id: '/_authenticated/topup'
+      path: '/topup'
+      fullPath: '/topup'
+      preLoaderRoute: typeof AuthenticatedTopupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/guides/rv-parking': {
       id: '/guides/rv-parking'
       path: '/guides/rv-parking'
@@ -752,6 +771,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedTopupRoute: typeof AuthenticatedTopupRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
   AuthenticatedAdminSupportRoute: typeof AuthenticatedAdminSupportRoute
   AuthenticatedHostEarningsRoute: typeof AuthenticatedHostEarningsRoute
@@ -770,6 +790,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedTopupRoute: AuthenticatedTopupRoute,
   AuthenticatedAdminPayoutsRoute: AuthenticatedAdminPayoutsRoute,
   AuthenticatedAdminSupportRoute: AuthenticatedAdminSupportRoute,
   AuthenticatedHostEarningsRoute: AuthenticatedHostEarningsRoute,
