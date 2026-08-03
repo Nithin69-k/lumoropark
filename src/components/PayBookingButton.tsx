@@ -5,11 +5,18 @@ import { CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useCurrency } from "@/hooks/useCurrency";
+import { CurrencySwitcher } from "@/components/CurrencySwitcher";
+import { formatUsd } from "@/lib/currency";
+import { getPaddleEnvironment } from "@/lib/paddle";
 import { getBookingCharge, type BookingCharge } from "@/lib/payments";
+import { createBookingCharge } from "@/utils/payments.functions";
 
 export function PayBookingButton({ bookingId }: { bookingId: string }) {
   const [charge, setCharge] = useState<BookingCharge | null>(null);
   const { openCheckout, loading } = usePaddleCheckout();
+  const { currency } = useCurrency();
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -23,24 +30,29 @@ export function PayBookingButton({ bookingId }: { bookingId: string }) {
 
   async function pay() {
     if (!charge) return;
+    setStarting(true);
     try {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       if (!user) throw new Error("Please sign in again");
 
+      const { transactionId } = await createBookingCharge({
+        data: { bookingId, currency, environment: getPaddleEnvironment() },
+      });
+
       await openCheckout({
-        items: [
-          { priceId: "parking_credit", quantity: charge.credits },
-          { priceId: "reservation_fee_flat", quantity: 1 },
-        ],
+        transactionId,
         customerEmail: user.email ?? undefined,
-        customData: { bookingId, userId: user.id },
         successUrl: `${window.location.origin}/bookings`,
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not open checkout");
+    } finally {
+      setStarting(false);
     }
   }
+
+  const busy = loading || starting;
 
   return (
     <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
@@ -49,17 +61,22 @@ export function PayBookingButton({ bookingId }: { bookingId: string }) {
           <div className="font-medium">Payment needed to confirm this reservation</div>
           {charge && (
             <div className="mt-1 text-xs text-muted-foreground">
-              Parking ${charge.base_amount.toFixed(2)} + platform fee $
-              {charge.platform_fee.toFixed(2)} + $
-              {charge.reservation_fee.toFixed(2)} reservation ={" "}
-              <span className="font-semibold text-foreground">${charge.total.toFixed(2)}</span>
+              Parking {formatUsd(charge.base_amount, currency)} + platform fee{" "}
+              {formatUsd(charge.platform_fee, currency)} +{" "}
+              {formatUsd(charge.reservation_fee, currency)} reservation ={" "}
+              <span className="font-semibold text-foreground">
+                {formatUsd(charge.total, currency)}
+              </span>
             </div>
           )}
         </div>
-        <Button size="sm" onClick={pay} disabled={loading || !charge}>
-          <CreditCard className="mr-1 h-4 w-4" />
-          {loading ? "Opening…" : charge ? `Pay $${charge.total.toFixed(2)}` : "Pay"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <CurrencySwitcher />
+          <Button size="sm" onClick={pay} disabled={busy || !charge}>
+            <CreditCard className="mr-1 h-4 w-4" />
+            {busy ? "Opening…" : charge ? `Pay ${formatUsd(charge.total, currency)}` : "Pay"}
+          </Button>
+        </div>
       </div>
     </div>
   );
