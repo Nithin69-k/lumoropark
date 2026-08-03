@@ -4,18 +4,14 @@ import { CreditCard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
-import { useCurrency } from "@/hooks/useCurrency";
-import { CurrencySwitcher } from "@/components/CurrencySwitcher";
-import { formatUsd } from "@/lib/currency";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
+import { formatUsdAsInr } from "@/lib/currency";
 import { getBookingCharge, type BookingCharge } from "@/lib/payments";
-import { createBookingCharge } from "@/utils/payments.functions";
+import { createBookingOrder, verifyPayment } from "@/utils/payments.functions";
 
 export function PayBookingButton({ bookingId }: { bookingId: string }) {
   const [charge, setCharge] = useState<BookingCharge | null>(null);
-  const { openCheckout, loading } = usePaddleCheckout();
-  const { currency } = useCurrency();
+  const { openCheckout, loading } = useRazorpayCheckout();
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
@@ -36,14 +32,33 @@ export function PayBookingButton({ bookingId }: { bookingId: string }) {
       const user = data.user;
       if (!user) throw new Error("Please sign in again");
 
-      const { transactionId } = await createBookingCharge({
-        data: { bookingId, currency, environment: getPaddleEnvironment() },
-      });
+      const order = await createBookingOrder({ data: { bookingId } });
 
       await openCheckout({
-        transactionId,
-        customerEmail: user.email ?? undefined,
-        successUrl: `${window.location.origin}/bookings`,
+        keyId: order.keyId,
+        orderId: order.orderId,
+        amount: order.amount,
+        description: "LumoroX Park reservation",
+        prefill: { email: user.email ?? undefined },
+        notes: { bookingId },
+        onSuccess: async (res) => {
+          try {
+            await verifyPayment({
+              data: {
+                razorpayOrderId: res.razorpay_order_id ?? order.orderId,
+                razorpayPaymentId: res.razorpay_payment_id,
+                razorpaySignature: res.razorpay_signature,
+                bookingId,
+              },
+            });
+            toast.success("Payment received — your reservation is confirmed");
+            window.location.assign("/bookings");
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "We could not confirm the payment");
+          }
+        },
+        onDismiss: () => toast.message("Payment cancelled — your slot is held a little longer"),
+        onFailure: (message) => toast.error(message),
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not open checkout");
@@ -61,22 +76,19 @@ export function PayBookingButton({ bookingId }: { bookingId: string }) {
           <div className="font-medium">Payment needed to confirm this reservation</div>
           {charge && (
             <div className="mt-1 text-xs text-muted-foreground">
-              Parking {formatUsd(charge.base_amount, currency)} + platform fee{" "}
-              {formatUsd(charge.platform_fee, currency)} +{" "}
-              {formatUsd(charge.reservation_fee, currency)} reservation ={" "}
+              Parking {formatUsdAsInr(charge.base_amount)} + platform fee{" "}
+              {formatUsdAsInr(charge.platform_fee)} + {formatUsdAsInr(charge.reservation_fee)}{" "}
+              reservation ={" "}
               <span className="font-semibold text-foreground">
-                {formatUsd(charge.total, currency)}
+                {formatUsdAsInr(charge.total)}
               </span>
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <CurrencySwitcher />
-          <Button size="sm" onClick={pay} disabled={busy || !charge}>
-            <CreditCard className="mr-1 h-4 w-4" />
-            {busy ? "Opening…" : charge ? `Pay ${formatUsd(charge.total, currency)}` : "Pay"}
-          </Button>
-        </div>
+        <Button size="sm" onClick={pay} disabled={busy || !charge}>
+          <CreditCard className="mr-1 h-4 w-4" />
+          {busy ? "Opening…" : charge ? `Pay ${formatUsdAsInr(charge.total)}` : "Pay"}
+        </Button>
       </div>
     </div>
   );

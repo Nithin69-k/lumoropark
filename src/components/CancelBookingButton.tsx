@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getCancellationQuote, type CancellationQuote } from "@/lib/search";
 import { cancelBookingWithRefund } from "@/utils/payments.functions";
-import { getPaddleEnvironment } from "@/lib/paddle";
 import { policyLabel } from "@/lib/spaces";
 
 export function CancelBookingButton({
@@ -47,7 +46,7 @@ export function CancelBookingButton({
     setBusy(true);
     try {
       const res = await cancelBookingWithRefund({
-        data: { bookingId, reason: reason.trim() || undefined, environment: getPaddleEnvironment() },
+        data: { bookingId, reason: reason.trim() || undefined },
       });
       if (res.refundAmount > 0) {
         toast.success(`Booking cancelled — $${res.refundAmount.toFixed(2)} refund is on its way`);

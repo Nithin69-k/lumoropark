@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
-import { openBillingPortal } from "@/utils/payments.functions";
+import { getPaymentEnvironment } from "@/lib/razorpay";
+import { cancelProSubscription } from "@/utils/payments.functions";
 
 export type SubscriptionRow = {
   id: string;
@@ -37,7 +37,7 @@ export function useSubscription() {
       .from("subscriptions")
       .select("id, price_id, product_id, status, current_period_end, cancel_at_period_end")
       .eq("user_id", userId)
-      .eq("environment", getPaddleEnvironment())
+      .eq("environment", getPaymentEnvironment())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -69,9 +69,10 @@ export function useSubscription() {
 
   const isActive = computeActive(subscription);
 
-  async function openPortal() {
-    const url = await openBillingPortal({ data: { environment: getPaddleEnvironment() } });
-    window.open(url, "_blank", "noopener,noreferrer");
+  /** Cancels Host Pro at the end of the paid period. */
+  async function cancelPlan() {
+    await cancelProSubscription();
+    await load();
   }
 
   return {
@@ -82,6 +83,6 @@ export function useSubscription() {
     cancelling: !!subscription?.cancel_at_period_end,
     loading,
     refresh: load,
-    openPortal,
+    cancelPlan,
   };
 }

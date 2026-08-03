@@ -5,11 +5,12 @@ import { ArrowLeft, Check, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useServerFn } from "@tanstack/react-start";
-import { getPaddleEnvironment } from "@/lib/paddle";
-import { changeSubscriptionPlan } from "@/utils/payments.functions";
+import { formatInr } from "@/lib/currency";
+import { PRO_PLANS, type ProPlanKey } from "@/lib/pricing";
+import { createProSubscription, verifySubscriptionPayment } from "@/utils/payments.functions";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 
@@ -49,53 +50,57 @@ const PRO = [
 ];
 
 function PricingPage() {
-  const { openCheckout, loading } = usePaddleCheckout();
-  const { isActive, subscription, pastDue, openPortal } = useSubscription();
-  const [portalBusy, setPortalBusy] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const runChangePlan = useServerFn(changeSubscriptionPlan);
+  const { openCheckout, loading } = useRazorpayCheckout();
+  const { isActive, subscription, pastDue, cancelling, cancelPlan, refresh } = useSubscription();
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const runCreateSubscription = useServerFn(createProSubscription);
+  const runVerify = useServerFn(verifySubscriptionPayment);
 
-  const currentPrice = subscription?.price_id;
-  const otherPlan =
-    currentPrice === "host_pro_monthly"
-      ? { priceId: "host_pro_yearly", label: "Switch to yearly — 2 months free" }
-      : currentPrice === "host_pro_yearly"
-        ? { priceId: "host_pro_monthly", label: "Switch to monthly billing" }
-        : null;
-
-  async function switchPlan(priceId: string) {
-    setSwitching(true);
+  async function cancel() {
+    if (!window.confirm("Cancel Host Pro? You keep Pro benefits until the end of this period.")) {
+      return;
+    }
+    setCancelBusy(true);
     try {
-      await runChangePlan({ data: { priceId, environment: getPaddleEnvironment() } });
-      toast.success("Plan updated — the change applies right away");
+      await cancelPlan();
+      toast.success("Host Pro will end when the current period finishes");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not switch your plan");
+      toast.error(e instanceof Error ? e.message : "Could not cancel your plan");
     } finally {
-      setSwitching(false);
+      setCancelBusy(false);
     }
   }
 
-  async function manage() {
-    setPortalBusy(true);
-    try {
-      await openPortal();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not open the billing portal");
-    } finally {
-      setPortalBusy(false);
-    }
-  }
-
-  async function subscribe(priceId: string) {
+  async function subscribe(plan: ProPlanKey) {
     try {
       const { data } = await supabase.auth.getUser();
       const user = data.user;
       if (!user) throw new Error("Sign in to subscribe");
+
+      const { keyId, subscriptionId } = await runCreateSubscription({ data: { plan } });
+
       await openCheckout({
-        items: [{ priceId, quantity: 1 }],
-        customerEmail: user.email ?? undefined,
-        customData: { userId: user.id },
-        successUrl: `${window.location.origin}/host`,
+        keyId,
+        subscriptionId,
+        description: PRO_PLANS[plan].name,
+        prefill: { email: user.email ?? undefined },
+        onSuccess: async (res) => {
+          try {
+            await runVerify({
+              data: {
+                razorpaySubscriptionId: res.razorpay_subscription_id ?? subscriptionId,
+                razorpayPaymentId: res.razorpay_payment_id,
+                razorpaySignature: res.razorpay_signature,
+              },
+            });
+            toast.success("Welcome to Host Pro!");
+            await refresh();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "We could not confirm the subscription");
+          }
+        },
+        onDismiss: () => toast.message("Subscription cancelled"),
+        onFailure: (message) => toast.error(message),
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not open checkout");
@@ -125,7 +130,7 @@ function PricingPage() {
         <div className="mt-8 grid gap-5 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
             <h3 className="font-semibold">Starter</h3>
-            <div className="mt-2 text-3xl font-bold">$0</div>
+            <div className="mt-2 text-3xl font-bold">{formatInr(0)}</div>
             <ul className="mt-4 space-y-2 text-sm">
               {FREE.map((f) => (
                 <li key={f} className="flex items-center gap-2">
@@ -145,9 +150,12 @@ function PricingPage() {
               <h3 className="font-semibold">Host Pro</h3>
             </div>
             <div className="mt-2 text-3xl font-bold">
-              $19<span className="text-base font-normal text-muted-foreground">/month</span>
+              {formatInr(PRO_PLANS.host_pro_monthly.amountInr)}
+              <span className="text-base font-normal text-muted-foreground">/month</span>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">or $190 billed yearly — 2 months free</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              or {formatInr(PRO_PLANS.host_pro_yearly.amountInr)} billed yearly — 2 months free
+            </p>
             <ul className="mt-4 space-y-2 text-sm">
               {PRO.map((f) => (
                 <li key={f} className="flex items-center gap-2">
@@ -175,22 +183,19 @@ function PricingPage() {
                 )}
                 {subscription?.status === "paused" && (
                   <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-sm">
-                    Your plan is paused, so Pro benefits are on hold. Resume it from the billing portal.
+                    Your plan is paused, so Pro benefits are on hold until the next charge succeeds.
                   </div>
                 )}
-                {otherPlan && (
+                {!cancelling && (
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     className="w-full"
-                    disabled={switching}
-                    onClick={() => switchPlan(otherPlan.priceId)}
+                    disabled={cancelBusy}
+                    onClick={cancel}
                   >
-                    {switching ? "Switching…" : otherPlan.label}
+                    {cancelBusy ? "Cancelling…" : "Cancel Host Pro"}
                   </Button>
                 )}
-                <Button variant="outline" className="w-full" disabled={portalBusy} onClick={manage}>
-                  {portalBusy ? "Opening…" : "Manage subscription"}
-                </Button>
               </div>
 
             ) : (

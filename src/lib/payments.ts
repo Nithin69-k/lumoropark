@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getPaymentEnvironment } from "@/lib/razorpay";
 
 export type BookingCharge = {
   base_amount: number;
@@ -12,7 +12,7 @@ export type BookingCharge = {
 export async function getBookingCharge(bookingId: string): Promise<BookingCharge> {
   const { data, error } = await supabase.rpc("get_booking_charge", {
     p_booking_id: bookingId,
-    p_env: getPaddleEnvironment(),
+    p_env: getPaymentEnvironment(),
   } as never);
   if (error) throw error;
   const row = (Array.isArray(data) ? data[0] : data) as BookingCharge | undefined;
@@ -38,7 +38,7 @@ export type BillingEntry = {
 /** Every payment, refund and plan charge on the signed-in account. */
 export async function listMyBillingHistory(): Promise<BillingEntry[]> {
   const { data, error } = await supabase.rpc("my_billing_history", {
-    p_env: getPaddleEnvironment(),
+    p_env: getPaymentEnvironment(),
   } as never);
   if (error) throw error;
   return ((data ?? []) as BillingEntry[]).map((r) => ({

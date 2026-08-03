@@ -100,20 +100,14 @@ function TermsPage() {
 
       <LegalSection heading="6. Payments, fees and subscriptions">
         <p>
-          Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record
-          for all our orders. Paddle provides all customer service inquiries and handles returns.
+          Payments are processed in Indian rupees (INR) by our payment gateway, Razorpay. We never
+          see or store your full card, UPI or bank details. LumoroX Park charges a platform
+          commission on each completed booking; the exact amount is always shown before you pay.
         </p>
         <p>
-          Payment, billing, tax, cancellation, and refund mechanics are governed by the{" "}
-          <a
-            href="https://www.paddle.com/legal/checkout-buyer-terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary underline underline-offset-4"
-          >
-            Paddle Buyer Terms
-          </a>
-          . Booking cancellations, refunds and disputes are described in our{" "}
+          Host Pro subscriptions renew automatically at the end of each billing period until you
+          cancel. You can cancel at any time from the Pricing page, and you keep Pro benefits until
+          the end of the period you have already paid for. Booking cancellations, refunds and disputes are described in our{" "}
           <Link to="/refunds" className="font-medium text-primary underline underline-offset-4">
             Refund &amp; Cancellation Policy
           </Link>

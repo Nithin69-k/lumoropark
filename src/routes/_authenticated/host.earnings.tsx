@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MIN_PAYOUT_AMOUNT } from "@/lib/paddle";
+import { MIN_PAYOUT_AMOUNT } from "@/lib/razorpay";
 import { useSubscription } from "@/hooks/useSubscription";
 import { getHostEarningsAnalytics } from "@/lib/earnings";
 import {
