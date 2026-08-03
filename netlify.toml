@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = ".output/public"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# TanStack Start ships a server bundle; Netlify serves it as a function.
+[functions]
+  directory = ".netlify/functions-internal"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
