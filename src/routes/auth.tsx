@@ -153,12 +153,10 @@ function AuthPage() {
         navigate({ to: safeNext ?? "/profile", replace: true });
       }
     } catch (err) {
-      const raw = err instanceof Error ? err.message : "Something went wrong";
-      const message = /invalid login credentials/i.test(raw)
-        ? "That email and password don't match. Check them, or reset your password."
-        : raw;
+      const message = describeAuthError(err);
       setLastError(message);
       toast.error(message);
+
     } finally {
       setBusy(false);
       setAttempt(0);
