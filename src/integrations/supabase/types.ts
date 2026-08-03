@@ -2215,6 +2215,10 @@ export type Database = {
         }
         Returns: string
       }
+      users_share_active_booking: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
+      }
       users_share_booking: {
         Args: { _a: string; _b: string }
         Returns: boolean
