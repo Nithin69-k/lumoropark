@@ -111,10 +111,11 @@ function AuthPage() {
       setResetSent(true);
       toast.success("Password reset link sent — check your inbox.");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not send the reset email";
+      const message = describeAuthError(err);
       setLastError(message);
       toast.error(message);
     } finally {
+
       setBusy(false);
       setAttempt(0);
     }
