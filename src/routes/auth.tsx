@@ -13,7 +13,9 @@ import { describeAuthError } from "@/lib/auth-errors";
 import { consumeNext, readOAuthError, sanitizeNext, saveNext } from "@/lib/auth-redirect";
 
 const searchSchema = z.object({
-  mode: z.enum(["signin", "signup", "forgot"]).catch("signin"),
+  // Optional so the router never rewrites `/auth` to `/auth?mode=signin`,
+  // which cost an extra server redirect on every visit to the sign-in page.
+  mode: z.enum(["signin", "signup", "forgot"]).optional().catch(undefined),
   next: z.string().optional(),
 });
 
@@ -25,7 +27,8 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { mode: initialMode, next } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode);
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(initialMode ?? "signin");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
