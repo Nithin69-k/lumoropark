@@ -123,8 +123,8 @@ All three platforms build with `npm run build` and serve `.output`.
 | Platform | Config in repo | Notes |
 | --- | --- | --- |
 | Vercel | `vercel.json` | Output directory `.vercel/output`. |
-| Netlify | `netlify.toml` | Publishes `.output/public`, routes the rest to the server bundle. |
-| Render | `render.yaml` | Web service, start command `node .output/server/index.mjs`. |
+| Netlify | `netlify.toml` | Sets `NITRO_PRESET=netlify`; publishes `dist/client`. |
+| Render | `render.yaml` | Sets `NITRO_PRESET=node-server`; starts `node .output/server/index.mjs`. |
 
 Set every variable from `.env.example` **before** the first build — anything
 prefixed with `VITE_` is baked into the browser bundle at build time.
