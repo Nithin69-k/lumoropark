@@ -9,6 +9,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Warm the next route's code + data as soon as a link is hovered/touched,
+    // so navigation feels instant instead of blank-then-spinner.
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
     defaultPreloadStaleTime: 0,
   });
 
