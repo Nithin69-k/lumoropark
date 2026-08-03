@@ -33,13 +33,13 @@ Minimum set for a fully working deployment:
 - `VITE_SITE_URL` — your live URL, e.g. `https://lumoropark.vercel.app`
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
 - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-- `VITE_PAYMENTS_CLIENT_TOKEN` (a `live_...` token for production)
-- `PADDLE_LIVE_API_KEY`, `PADDLE_SANDBOX_API_KEY`
+- `VITE_RAZORPAY_KEY_ID` (an `rzp_live_...` key for production)
+- `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
 - `PAYMENTS_LIVE_WEBHOOK_SECRET`, `PAYMENTS_SANDBOX_WEBHOOK_SECRET`
 - `LOVABLE_API_KEY`
 
 Without `SUPABASE_SERVICE_ROLE_KEY`, payment settlement, expiry of stale
-checkout holds and account deletion will fail. Without the Paddle keys,
+checkout holds and account deletion will fail. Without the Razorpay keys,
 checkout cannot resolve prices.
 
 ## 3. Point the payment webhook at Vercel
@@ -48,7 +48,7 @@ After the first successful deploy, update the payment provider's webhook
 destination to:
 
 ```
-https://<your-vercel-domain>/api/public/payments/webhook?env=live
+https://<your-vercel-domain>/api/public/payments/razorpay-webhook?env=live
 ```
 
 (and the test destination to the same URL with `?env=sandbox`).
@@ -131,9 +131,9 @@ prefixed with `VITE_` is baked into the browser bundle at build time.
 
 ### Payments without Lovable hosting
 
-If `LOVABLE_API_KEY` is not set, the server calls the Paddle API directly using
-`PADDLE_SANDBOX_API_KEY` / `PADDLE_LIVE_API_KEY`. Point your Paddle webhook at
-`https://your-domain/api/public/payments/webhook?env=live` (and the sandbox one
+The server calls the Razorpay API directly using `RAZORPAY_KEY_SECRET`.
+Point your Razorpay webhook at
+`https://your-domain/api/public/payments/razorpay-webhook?env=live` (and the sandbox one
 at `...?env=sandbox`) and store the signing secrets in
 `PAYMENTS_LIVE_WEBHOOK_SECRET` / `PAYMENTS_SANDBOX_WEBHOOK_SECRET`.
 
@@ -146,6 +146,6 @@ Drivers can pay in **US dollars or Indian rupees**, and can pay any amount:
 - The conversion rate lives in `src/lib/currency.ts` (`USD_TO_INR`) so a quote
   can never drift from the amount charged.
 - Booking payments and the **Add parking credit** page (`/topup`) both create a
-  single custom-amount Paddle transaction server-side, so there is no upper
+  single custom-amount Razorpay order server-side, so there is no upper
   limit tied to catalog pricing. Booking amounts are always recalculated on the
   server — the browser never dictates what is charged.
