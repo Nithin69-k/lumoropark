@@ -1,15 +1,7 @@
 [build]
   command = "npm run build"
-  publish = ".output/public"
+  publish = "dist/client"
 
 [build.environment]
-  NODE_VERSION = "20"
-
-# TanStack Start ships a server bundle; Netlify serves it as a function.
-[functions]
-  directory = ".netlify/functions-internal"
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200
+  NODE_VERSION = "22"
+  NITRO_PRESET = "netlify"

@@ -7,8 +7,10 @@ services:
     startCommand: node .output/server/index.mjs
     healthCheckPath: /
     envVars:
+      - key: NITRO_PRESET
+        value: node-server
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: VITE_SITE_URL
         sync: false
       - key: VITE_SUPABASE_URL
