@@ -152,3 +152,127 @@ export const changeSubscriptionPlan = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+/* ------------------------------------------------------------------ *
+ * Custom-amount payments (any amount, in USD or INR)
+ * ------------------------------------------------------------------ */
+
+type CurrencyCode = "USD" | "INR";
+const USD_TO_INR = 88;
+const MIN_CHARGE: Record<CurrencyCode, number> = { USD: 0.7, INR: 60 };
+const MAX_CHARGE: Record<CurrencyCode, number> = { USD: 10000, INR: 880000 };
+
+/** Resolves the Paddle product a custom (non-catalog) price hangs off. */
+async function resolveProductId(env: PaddleEnv, externalId: string): Promise<string> {
+  const res = await gatewayFetch(env, `/products?external_id=${encodeURIComponent(externalId)}`);
+  const json = (await res.json()) as { data?: Array<{ id: string }> };
+  const id = json.data?.[0]?.id;
+  if (!id) throw new Error("Payment catalog is not configured yet");
+  return id;
+}
+
+async function createTransaction(input: {
+  env: PaddleEnv;
+  productId: string;
+  description: string;
+  amount: number;
+  currency: CurrencyCode;
+  customData: Record<string, string>;
+  email?: string;
+}): Promise<string> {
+  const res = await gatewayFetch(input.env, "/transactions", {
+    method: "POST",
+    body: JSON.stringify({
+      items: [
+        {
+          quantity: 1,
+          price: {
+            description: input.description,
+            name: input.description.slice(0, 50),
+            product_id: input.productId,
+            unit_price: {
+              amount: String(Math.round(input.amount * 100)),
+              currency_code: input.currency,
+            },
+            quantity: { minimum: 1, maximum: 1 },
+          },
+        },
+      ],
+      currency_code: input.currency,
+      collection_mode: "automatic",
+      custom_data: input.customData,
+    }),
+  });
+  if (!res.ok) {
+    console.error("Could not create transaction", await res.text());
+    throw new Error("Could not start the payment. Please try again.");
+  }
+  const json = (await res.json()) as { data?: { id?: string } };
+  if (!json.data?.id) throw new Error("Could not start the payment. Please try again.");
+  return json.data.id;
+}
+
+/**
+ * Prices a booking server-side and opens it as a single custom-amount Paddle
+ * transaction in the driver's currency. The amount is always derived from the
+ * database — never from the browser.
+ */
+export const createBookingCharge = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { bookingId: string; currency: CurrencyCode; environment: PaddleEnv }) => data)
+  .handler(async ({ data, context }): Promise<{ transactionId: string; amount: number; currency: CurrencyCode }> => {
+    const currency: CurrencyCode = data.currency === "INR" ? "INR" : "USD";
+
+    const { data: quote, error } = await context.supabase.rpc("get_booking_charge", {
+      p_booking_id: data.bookingId,
+      p_env: data.environment,
+    });
+    if (error) throw new Error(error.message);
+    const row = (Array.isArray(quote) ? quote[0] : quote) as { total: number | string } | null;
+    if (!row) throw new Error("Could not price this booking");
+
+    const usdTotal = Number(row.total);
+    const amount = Math.round((currency === "INR" ? usdTotal * USD_TO_INR : usdTotal) * 100) / 100;
+    if (!(amount >= MIN_CHARGE[currency]) || amount > MAX_CHARGE[currency]) {
+      throw new Error("This booking amount cannot be charged online.");
+    }
+
+    const productId = await resolveProductId(data.environment, "wallet_topup");
+    const transactionId = await createTransaction({
+      env: data.environment,
+      productId,
+      description: "LumoroX Park reservation",
+      amount,
+      currency,
+      customData: { bookingId: data.bookingId, userId: context.userId },
+    });
+    return { transactionId, amount, currency };
+  });
+
+/**
+ * Opens a payment for any amount the driver chooses (parking credit top-up),
+ * in either supported currency.
+ */
+export const createCustomCharge = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { amount: number; currency: CurrencyCode; environment: PaddleEnv }) => data)
+  .handler(async ({ data, context }): Promise<{ transactionId: string }> => {
+    const currency: CurrencyCode = data.currency === "INR" ? "INR" : "USD";
+    const amount = Math.round(Number(data.amount) * 100) / 100;
+    if (!Number.isFinite(amount) || amount < MIN_CHARGE[currency] || amount > MAX_CHARGE[currency]) {
+      throw new Error(
+        `Enter an amount between ${MIN_CHARGE[currency]} and ${MAX_CHARGE[currency]} ${currency}.`,
+      );
+    }
+
+    const productId = await resolveProductId(data.environment, "wallet_topup");
+    const transactionId = await createTransaction({
+      env: data.environment,
+      productId,
+      description: "LumoroX Park parking credit",
+      amount,
+      currency,
+      customData: { userId: context.userId, kind: "topup" },
+    });
+    return { transactionId };
+  });
