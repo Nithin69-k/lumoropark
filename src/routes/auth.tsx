@@ -174,8 +174,6 @@ function AuthPage() {
             <span aria-hidden="true">🅿️</span> LumoroX Park
           </span>
         </Link>
-
-        </Link>
         <div className="rounded-2xl border border-border bg-card p-6 shadow-card">
           <h1 className="text-2xl font-bold">
             {mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset your password" : "Sign in"}
