@@ -122,12 +122,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
-      {
-        rel: "stylesheet",
-        href: "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-        integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
-        crossOrigin: "",
-      },
+      // Leaflet's CSS is bundled inside the lazy map chunks, so pages without a
+      // map no longer pay for a render-blocking third-party stylesheet.
     ],
   }),
   shellComponent: RootShell,

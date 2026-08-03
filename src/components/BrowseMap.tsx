@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import type { SpaceResult } from "@/lib/search";
 import { markPerf, startPerfTimer } from "@/lib/perf";
 
