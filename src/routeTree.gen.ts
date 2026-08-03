@@ -32,6 +32,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedTopupRouteImport } from './routes/_authenticated/topup'
+import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as GuidesRvParkingRouteImport } from './routes/guides.rv-parking'
 import { Route as SpaceIdRouteImport } from './routes/space.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -164,6 +165,11 @@ const AuthenticatedTopupRoute = AuthenticatedTopupRouteImport.update({
   path: '/topup',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth_/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesRvParkingRoute = GuidesRvParkingRouteImport.update({
   id: '/guides/rv-parking',
   path: '/guides/rv-parking',
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/topup': typeof AuthenticatedTopupRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/topup': typeof AuthenticatedTopupRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -343,6 +351,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/topup': typeof AuthenticatedTopupRoute
+  '/auth_/callback': typeof AuthCallbackRoute
   '/guides/rv-parking': typeof GuidesRvParkingRoute
   '/space/$id': typeof SpaceIdRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -383,6 +392,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/topup'
+    | '/auth/callback'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/topup'
+    | '/auth/callback'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -460,6 +471,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/topup'
+    | '/auth_/callback'
     | '/guides/rv-parking'
     | '/space/$id'
     | '/.lovable/oauth/consent'
@@ -493,6 +505,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   GuidesRvParkingRoute: typeof GuidesRvParkingRoute
   SpaceIdRoute: typeof SpaceIdRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -663,6 +676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTopupRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/auth_/callback': {
+      id: '/auth_/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/rv-parking': {
       id: '/guides/rv-parking'
       path: '/guides/rv-parking'
@@ -823,6 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   GuidesRvParkingRoute: GuidesRvParkingRoute,
   SpaceIdRoute: SpaceIdRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
