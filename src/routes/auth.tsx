@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "@/lib/google-signin";
+import { describeAuthError } from "@/lib/auth-errors";
+import { consumeNext, readOAuthError, sanitizeNext, saveNext } from "@/lib/auth-redirect";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup", "forgot"]).catch("signin"),
@@ -33,16 +35,33 @@ function AuthPage() {
   const [resetSent, setResetSent] = useState(false);
 
   // Only same-origin relative paths are allowed as `next` targets.
-  const safeNext = typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : null;
+  const safeNext = sanitizeNext(next);
 
+  // Surface a provider error if Google bounced the user straight back here.
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) return;
-      const stashed = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_next") : null;
-      if (stashed) sessionStorage.removeItem("post_auth_next");
-      navigate({ to: stashed ?? safeNext ?? "/onboarding", replace: true });
-    });
+    if (typeof window === "undefined") return;
+    const providerError = readOAuthError(window.location.href);
+    if (!providerError) return;
+    const message = describeAuthError(providerError);
+    setLastError(message);
+    toast.error(message);
+  }, []);
+
+  // Redirect an already-signed-in visitor, and catch a session that arrives
+  // slightly later (token refresh / OAuth hash exchange finishing).
+  useEffect(() => {
+    let done = false;
+    const go = (session: unknown) => {
+      if (done || !session) return;
+      done = true;
+      navigate({ to: consumeNext() ?? safeNext ?? "/onboarding", replace: true });
+    };
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => go(session));
+    supabase.auth.getSession().then(({ data }) => go(data.session));
+    return () => sub.subscription.unsubscribe();
   }, [navigate, safeNext]);
+
+
 
 
   /** Transient failures (offline, DNS, 5xx) are worth retrying; bad credentials are not. */
