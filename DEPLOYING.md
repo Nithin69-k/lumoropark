@@ -116,6 +116,45 @@ against any Supabase project — Lovable-managed or your own.
 Off Lovable hosting, Google sign-in automatically uses Supabase's own OAuth
 flow instead of the Lovable broker — no code change required.
 
+### Project `xlmmmbztwreeqkbmwdan` (ap-south-1)
+
+Set exactly these in Vercel → Settings → Environment Variables, then redeploy
+(the `VITE_*` ones are baked in at build time):
+
+```
+VITE_SUPABASE_URL=https://xlmmmbztwreeqkbmwdan.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_pWXbMiHdxsWjFo1czaT1lA_FUooRSmv
+VITE_SUPABASE_PROJECT_ID=xlmmmbztwreeqkbmwdan
+SUPABASE_URL=https://xlmmmbztwreeqkbmwdan.supabase.co
+SUPABASE_PUBLISHABLE_KEY=sb_publishable_pWXbMiHdxsWjFo1czaT1lA_FUooRSmv
+SUPABASE_PROJECT_ID=xlmmmbztwreeqkbmwdan
+SUPABASE_SERVICE_ROLE_KEY=<your sb_secret_... key>
+```
+
+Name mapping from the Supabase "Connect" panel (that panel assumes Next.js;
+this app is TanStack Start):
+
+| Supabase panel | This app |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | `VITE_SUPABASE_URL` (+ `SUPABASE_URL`) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `VITE_SUPABASE_PUBLISHABLE_KEY` (+ `SUPABASE_PUBLISHABLE_KEY`) |
+| `SUPABASE_SECRET_KEY` | `SUPABASE_SERVICE_ROLE_KEY` |
+| `SUPABASE_JWKS_URL` | not needed — tokens are verified via the Supabase client |
+
+Before the first deploy against this project:
+
+1. SQL Editor → run `supabase/schema.sql` once (creates every table, function,
+   trigger, RLS policy and grant).
+2. Authentication → Providers → enable Email, and Google if wanted.
+3. Authentication → URL Configuration → Site URL = your Vercel domain, with
+   `https://<domain>/auth`, `https://<domain>/auth/callback` and
+   `https://<domain>/reset-password` as redirect URLs.
+4. Rotate the secret key if it has ever been pasted into a chat or shared doc.
+
+The Lovable editor preview keeps using its own managed backend; these values
+only take effect on Vercel (or any host you set them on).
+
+
 ## Deploying
 
 All three platforms build with `npm run build` and serve `.output`.
