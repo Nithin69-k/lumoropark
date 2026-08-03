@@ -17,8 +17,13 @@ function requireEnv(key: string): string {
 }
 
 export function getKeyId(): string {
-  return requireEnv("RAZORPAY_KEY_ID");
+  // The key id is publishable, so the VITE_ variable is a valid fallback for
+  // hosts where only the browser variable is configured.
+  const value = process.env["RAZORPAY_KEY_ID"] || process.env["VITE_RAZORPAY_KEY_ID"];
+  if (!value) throw new Error("RAZORPAY_KEY_ID is not configured");
+  return value;
 }
+
 
 function getKeySecret(): string {
   return requireEnv("RAZORPAY_KEY_SECRET");
