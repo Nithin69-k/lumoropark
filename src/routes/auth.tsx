@@ -165,22 +165,24 @@ function AuthPage() {
 
   async function handleGoogle() {
     setBusy(true);
-    // Preserve `next` across the full-page OAuth round-trip.
-    if (safeNext && typeof window !== "undefined") {
-      sessionStorage.setItem("post_auth_next", safeNext);
-    }
-    const result = await signInWithGoogle(window.location.origin + "/auth");
+    setLastError(null);
+    // Preserve `next` across the full-page OAuth round-trip (survives a new tab).
+    saveNext(safeNext);
+    const result = await signInWithGoogle(window.location.origin + "/auth/callback");
     if (result.error) {
-      toast.error(result.error.message ?? "Google sign-in failed");
+      const message = describeAuthError(result.error.message ?? "Google sign-in failed");
+      setLastError(message);
+      toast.error(message);
       setBusy(false);
       return;
     }
+    // Full-page redirect in progress — the callback route finishes the job.
     if (result.redirected) return;
-    const stashed = typeof window !== "undefined" ? sessionStorage.getItem("post_auth_next") : null;
-    if (stashed) sessionStorage.removeItem("post_auth_next");
-    navigate({ to: stashed ?? safeNext ?? "/onboarding", replace: true });
+    // Popup flow: the session is already set.
+    navigate({ to: consumeNext() ?? safeNext ?? "/onboarding", replace: true });
     setBusy(false);
   }
+
 
 
   return (
