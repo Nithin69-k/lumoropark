@@ -36,6 +36,8 @@ function AuthPage() {
   const [attempt, setAttempt] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   // Only same-origin relative paths are allowed as `next` targets.
   const safeNext = sanitizeNext(next);
