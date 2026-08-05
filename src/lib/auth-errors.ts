@@ -19,6 +19,8 @@ export function describeAuthError(err: unknown): string {
     return "An account with this email already exists. Try signing in instead.";
   if (msg.includes("password should be at least"))
     return "Your password is too short — use at least 6 characters.";
+  if (msg.includes("known to be weak") || msg.includes("pwned") || msg.includes("leaked"))
+    return "That password has appeared in a data breach. Pick a different, stronger one.";
   if (msg.includes("unsupported provider") || msg.includes("provider is not enabled"))
     return "Google sign-in isn't enabled for this app yet. Use email and password for now.";
   if (msg.includes("access_denied") || msg.includes("access denied"))

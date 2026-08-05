@@ -36,6 +36,8 @@ function AuthPage() {
   const [attempt, setAttempt] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
+  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   // Only same-origin relative paths are allowed as `next` targets.
   const safeNext = sanitizeNext(next);
@@ -124,6 +126,23 @@ function AuthPage() {
     }
   }
 
+  async function resendConfirmation() {
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: window.location.origin + "/auth/callback" },
+      });
+      if (error) throw error;
+      toast.success("Confirmation email sent again.");
+    } catch (err) {
+      toast.error(describeAuthError(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     if (mode === "forgot") {
@@ -134,17 +153,28 @@ function AuthPage() {
     setLastError(null);
     try {
       if (mode === "signup") {
-        await withRetry(async () => {
-          const { error } = await supabase.auth.signUp({
+        const session = await withRetry(async () => {
+          const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-              emailRedirectTo: safeNext ? window.location.origin + safeNext : window.location.origin,
+              // Always return to the public callback route; it hydrates the
+              // session and then forwards to `next`.
+              emailRedirectTo: window.location.origin + "/auth/callback",
               data: { full_name: fullName },
             },
           });
           if (error) throw error;
+          return data.session;
         });
+        // With email confirmation on, signUp returns no session — the user is
+        // NOT signed in yet. Navigating to a protected page here is what made
+        // sign-up look broken (instant bounce back to this screen).
+        if (!session) {
+          setConfirmPending(true);
+          toast.success("Account created — confirm your email to finish.");
+          return;
+        }
         toast.success("Account created — you're in!");
         navigate({ to: safeNext ?? "/onboarding", replace: true });
       } else {
@@ -158,6 +188,7 @@ function AuthPage() {
     } catch (err) {
       const message = describeAuthError(err);
       setLastError(message);
+      setNeedsConfirm(/email isn't confirmed/i.test(message));
       toast.error(message);
 
     } finally {
@@ -206,7 +237,34 @@ function AuthPage() {
                 : "Welcome back to LumoroX Park."}
           </p>
 
-          {mode !== "forgot" && (
+          {confirmPending && (
+            <div className="mt-6 rounded-lg border border-border bg-muted/40 p-4 text-sm">
+              <p className="font-medium text-foreground">Confirm your email to finish</p>
+              <p className="mt-1 text-muted-foreground">
+                We sent a confirmation link to{" "}
+                <span className="font-medium text-foreground">{email}</span>. Open it and you'll be
+                signed in automatically. Check spam if it doesn't arrive in a minute.
+              </p>
+              <div className="mt-3 flex gap-3">
+                <Button type="button" size="sm" onClick={resendConfirmation} disabled={busy}>
+                  Resend email
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setConfirmPending(false);
+                    setMode("signin");
+                  }}
+                >
+                  Back to sign in
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!confirmPending && mode !== "forgot" && (
             <>
               <Button
                 type="button"
@@ -226,6 +284,7 @@ function AuthPage() {
             </>
           )}
 
+          {!confirmPending && (
           <form onSubmit={handleEmail} className={mode === "forgot" ? "mt-6 space-y-3" : "space-y-3"}>
             {mode === "signup" && (
               <div>
@@ -290,13 +349,24 @@ function AuthPage() {
             {lastError && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
                 <p>{lastError}</p>
-                <button
-                  type="submit"
-                  className="mt-1 font-medium underline underline-offset-2"
-                  disabled={busy}
-                >
-                  Try again
-                </button>
+                {needsConfirm ? (
+                  <button
+                    type="button"
+                    onClick={resendConfirmation}
+                    className="mt-1 font-medium underline underline-offset-2"
+                    disabled={busy}
+                  >
+                    Resend confirmation email
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="mt-1 font-medium underline underline-offset-2"
+                    disabled={busy}
+                  >
+                    Try again
+                  </button>
+                )}
               </div>
             )}
 
@@ -312,6 +382,7 @@ function AuthPage() {
                     : "Sign in"}
             </Button>
           </form>
+          )}
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
             {mode === "forgot" ? (
