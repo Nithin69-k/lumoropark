@@ -321,13 +321,24 @@ function AuthPage() {
             {lastError && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
                 <p>{lastError}</p>
-                <button
-                  type="submit"
-                  className="mt-1 font-medium underline underline-offset-2"
-                  disabled={busy}
-                >
-                  Try again
-                </button>
+                {needsConfirm ? (
+                  <button
+                    type="button"
+                    onClick={resendConfirmation}
+                    className="mt-1 font-medium underline underline-offset-2"
+                    disabled={busy}
+                  >
+                    Resend confirmation email
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="mt-1 font-medium underline underline-offset-2"
+                    disabled={busy}
+                  >
+                    Try again
+                  </button>
+                )}
               </div>
             )}
 
@@ -343,6 +354,7 @@ function AuthPage() {
                     : "Sign in"}
             </Button>
           </form>
+          )}
 
           <p className="mt-5 text-center text-sm text-muted-foreground">
             {mode === "forgot" ? (
