@@ -124,6 +124,23 @@ function AuthPage() {
     }
   }
 
+  async function resendConfirmation() {
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: window.location.origin + "/auth/callback" },
+      });
+      if (error) throw error;
+      toast.success("Confirmation email sent again.");
+    } catch (err) {
+      toast.error(describeAuthError(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     if (mode === "forgot") {
@@ -134,17 +151,28 @@ function AuthPage() {
     setLastError(null);
     try {
       if (mode === "signup") {
-        await withRetry(async () => {
-          const { error } = await supabase.auth.signUp({
+        const session = await withRetry(async () => {
+          const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
-              emailRedirectTo: safeNext ? window.location.origin + safeNext : window.location.origin,
+              // Always return to the public callback route; it hydrates the
+              // session and then forwards to `next`.
+              emailRedirectTo: window.location.origin + "/auth/callback",
               data: { full_name: fullName },
             },
           });
           if (error) throw error;
+          return data.session;
         });
+        // With email confirmation on, signUp returns no session — the user is
+        // NOT signed in yet. Navigating to a protected page here is what made
+        // sign-up look broken (instant bounce back to this screen).
+        if (!session) {
+          setConfirmPending(true);
+          toast.success("Account created — confirm your email to finish.");
+          return;
+        }
         toast.success("Account created — you're in!");
         navigate({ to: safeNext ?? "/onboarding", replace: true });
       } else {
@@ -158,6 +186,7 @@ function AuthPage() {
     } catch (err) {
       const message = describeAuthError(err);
       setLastError(message);
+      setNeedsConfirm(/email isn't confirmed/i.test(message));
       toast.error(message);
 
     } finally {
