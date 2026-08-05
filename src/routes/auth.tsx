@@ -237,7 +237,34 @@ function AuthPage() {
                 : "Welcome back to LumoroX Park."}
           </p>
 
-          {mode !== "forgot" && (
+          {confirmPending && (
+            <div className="mt-6 rounded-lg border border-border bg-muted/40 p-4 text-sm">
+              <p className="font-medium text-foreground">Confirm your email to finish</p>
+              <p className="mt-1 text-muted-foreground">
+                We sent a confirmation link to{" "}
+                <span className="font-medium text-foreground">{email}</span>. Open it and you'll be
+                signed in automatically. Check spam if it doesn't arrive in a minute.
+              </p>
+              <div className="mt-3 flex gap-3">
+                <Button type="button" size="sm" onClick={resendConfirmation} disabled={busy}>
+                  Resend email
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setConfirmPending(false);
+                    setMode("signin");
+                  }}
+                >
+                  Back to sign in
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!confirmPending && mode !== "forgot" && (
             <>
               <Button
                 type="button"
@@ -257,6 +284,7 @@ function AuthPage() {
             </>
           )}
 
+          {!confirmPending && (
           <form onSubmit={handleEmail} className={mode === "forgot" ? "mt-6 space-y-3" : "space-y-3"}>
             {mode === "signup" && (
               <div>
