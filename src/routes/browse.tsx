@@ -11,6 +11,7 @@ import { SpacePhoto } from "@/components/SpacePhoto";
 import { searchSpaces, type SpaceResult } from "@/lib/search";
 import { MapFrame } from "@/components/MapFrame";
 import { markPerf, startPerfTimer } from "@/lib/perf";
+import { formatUsdAsInr, INR_PER_USD } from "@/lib/currency";
 
 const BrowseMap = lazy(() =>
   import("@/components/BrowseMap").then((m) => ({ default: m.BrowseMap })),
@@ -95,7 +96,7 @@ function BrowsePage() {
           covered: covered || undefined,
           gated: gated || undefined,
           ev: ev || undefined,
-          maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+          maxPrice: maxPrice ? parseFloat(maxPrice) / INR_PER_USD : undefined,
         });
         setResults(rows);
       } catch (e) {
@@ -128,8 +129,8 @@ function BrowsePage() {
               <FilterCheck label="Gated" checked={gated} onChange={setGated} />
               <FilterCheck label="EV charging" checked={ev} onChange={setEv} />
               <div>
-                <Label htmlFor="mp" className="text-xs">Max $/hr</Label>
-                <Input id="mp" type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="any" />
+                <Label htmlFor="mp" className="text-xs">Max ₹/hr</Label>
+                <Input id="mp" type="number" min="0" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="any" />
               </div>
               <div>
                 <Label htmlFor="rd" className="text-xs">Radius (km)</Label>
@@ -200,7 +201,7 @@ function BrowsePage() {
                         )}
                       </div>
                       <div className="whitespace-nowrap text-sm font-semibold text-primary">
-                        ${s.price_per_hour}/hr
+                        {formatUsdAsInr(s.price_per_hour)}/hr
                       </div>
                     </div>
                     <div className="truncate text-xs text-muted-foreground">{s.address}</div>

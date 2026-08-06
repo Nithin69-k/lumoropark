@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Calendar, MapPin, CheckCircle2, Clock, LogOut, Star, AlertTriangle, MessageSquare, Gavel, XCircle } from "lucide-react";
 import { z } from "zod";
 import { formatDistanceToNow } from "date-fns";
+import { formatUsdAsInr } from "@/lib/currency";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -159,7 +160,7 @@ function BookingCard({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-lg font-bold">${b.total_price.toFixed(2)}</div>
+          <div className="text-lg font-bold">{formatUsdAsInr(b.total_price)}</div>
           <StatusBadge status={b.status} payment={b.payment_status} />
           <div className="mt-2"><PolicyBadge policy={b.cancellation_policy} /></div>
         </div>

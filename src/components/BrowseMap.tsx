@@ -4,10 +4,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { SpaceResult } from "@/lib/search";
 import { markPerf, startPerfTimer } from "@/lib/perf";
+import { formatUsdAsInr, usdToInr } from "@/lib/currency";
 
 const pinIcon = L.divIcon({
   className: "",
-  html: `<div style="background:hsl(var(--primary));color:hsl(var(--primary-foreground));font:600 12px system-ui;padding:6px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap;">$%PRICE%</div>`,
+  html: `<div style="background:hsl(var(--primary));color:hsl(var(--primary-foreground));font:600 12px system-ui;padding:6px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap;">₹%PRICE%</div>`,
   iconSize: [40, 24],
   iconAnchor: [20, 24],
 });
@@ -15,7 +16,7 @@ const pinIcon = L.divIcon({
 function priceIcon(price: number) {
   return L.divIcon({
     className: "",
-    html: `<div style="background:hsl(var(--primary));color:hsl(var(--primary-foreground));font:600 12px system-ui;padding:4px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap;">$${price}</div>`,
+    html: `<div style="background:hsl(var(--primary));color:hsl(var(--primary-foreground));font:600 12px system-ui;padding:4px 8px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.25);white-space:nowrap;">₹${Math.round(usdToInr(price))}</div>`,
     iconSize: [40, 24],
     iconAnchor: [20, 24],
   });
@@ -106,14 +107,14 @@ export function BrowseMap({ center, spaces, selectedId, onSelect, onCenterChange
           <Marker
             key={s.id}
             position={[s.lat, s.lng]}
-            icon={priceIcon(Math.round(s.price_per_hour))}
+            icon={priceIcon(s.price_per_hour)}
             eventHandlers={{ click: () => onSelect?.(s.id) }}
           >
             <Popup>
               <div className="min-w-[160px]">
                 <div className="text-sm font-semibold">{s.title}</div>
                 <div className="text-xs opacity-70">{s.address}</div>
-                <div className="mt-1 text-sm">${s.price_per_hour}/hr</div>
+                <div className="mt-1 text-sm">{formatUsdAsInr(s.price_per_hour)}/hr</div>
                 <button
                   className="mt-2 text-xs font-medium text-primary underline"
                   onClick={() => onSelect?.(s.id)}

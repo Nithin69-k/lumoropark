@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSpaceDetail, createPendingBooking, type SpaceDetail } from "@/lib/search";
 import { trustBand } from "@/lib/profile";
 import { MapFrame } from "@/components/MapFrame";
+import { formatUsdAsInr, usdToInr } from "@/lib/currency";
 
 const MapPicker = lazy(() =>
   import("@/components/MapPicker").then((m) => ({ default: m.MapPicker })),
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/space/$id")({
     const title = d ? `${d.title} — Private parking on LumoroX Park` : "Parking listing — LumoroX Park";
     const trimmedTitle = title.length > 60 ? `${title.slice(0, 57)}…` : title;
     const description = d
-      ? `${d.title} at ${d.address}. Book from $${d.price_per_hour}/hr on LumoroX Park.`.slice(0, 160)
+      ? `${d.title} at ${d.address}. Book from ${formatUsdAsInr(d.price_per_hour)}/hr on LumoroX Park.`.slice(0, 160)
       : "Book this private parking spot by the hour on LumoroX Park.";
     const scripts = d
       ? [
@@ -48,8 +49,8 @@ export const Route = createFileRoute("/space/$id")({
               url,
               offers: {
                 "@type": "Offer",
-                price: d.price_per_hour,
-                priceCurrency: "USD",
+                price: usdToInr(d.price_per_hour),
+                priceCurrency: "INR",
                 availability: "https://schema.org/InStock",
               },
               additionalType: "https://schema.org/ParkingFacility",
@@ -296,11 +297,11 @@ function SpacePage() {
             <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
               <div className="flex items-baseline justify-between">
                 <div>
-                  <div className="text-3xl font-bold">${detail.price_per_hour}</div>
+                  <div className="text-3xl font-bold">{formatUsdAsInr(detail.price_per_hour)}</div>
                   <div className="text-xs text-muted-foreground">per hour</div>
                 </div>
                 {detail.price_per_day && (
-                  <div className="text-right text-sm text-muted-foreground">or ${detail.price_per_day}/day</div>
+                  <div className="text-right text-sm text-muted-foreground">or {formatUsdAsInr(detail.price_per_day)}/day</div>
                 )}
               </div>
 
@@ -317,7 +318,7 @@ function SpacePage() {
 
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-sm">
                 <span className="text-muted-foreground">{hours > 0 ? `${hours.toFixed(1)} hours` : "—"}</span>
-                <span className="font-semibold">${estimated.toFixed(2)}</span>
+                <span className="font-semibold">{formatUsdAsInr(estimated)}</span>
               </div>
 
               <Button className="mt-4 w-full" size="lg" onClick={handleBook} disabled={booking}>
