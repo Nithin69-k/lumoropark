@@ -107,7 +107,7 @@ export function BrowseMap({ center, spaces, selectedId, onSelect, onCenterChange
           <Marker
             key={s.id}
             position={[s.lat, s.lng]}
-            icon={priceIcon(Math.round(s.price_per_hour))}
+            icon={priceIcon(s.price_per_hour)}
             eventHandlers={{ click: () => onSelect?.(s.id) }}
           >
             <Popup>
