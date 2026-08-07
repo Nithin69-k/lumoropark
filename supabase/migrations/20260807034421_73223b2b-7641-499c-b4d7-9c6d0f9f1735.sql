@@ -1,0 +1,1 @@
+select cron.schedule('expire-pending-bookings', '*/5 * * * *', 'select public.expire_pending_bookings();');
