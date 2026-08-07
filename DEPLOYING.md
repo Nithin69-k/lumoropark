@@ -15,7 +15,7 @@ Vercel → **Add New → Project → Import Git Repository**.
 | Framework preset | Other (`null`)     |
 | Install command  | `npm install`      |
 | Build command    | `npm run build`    |
-| Output directory | `.vercel/output`   |
+| Output directory | leave EMPTY (Build Output API auto-detected) |
 | Node version     | 22.x (from `engines`) |
 
 Do not override these in the dashboard.
@@ -159,7 +159,7 @@ All three platforms build with `npm run build` and serve `.output`.
 
 | Platform | Config in repo | Notes |
 | --- | --- | --- |
-| Vercel | `vercel.json` | Output directory `.vercel/output`. |
+| Vercel | `vercel.json` | Leave Output Directory empty; `.vercel/output` is auto-detected. |
 | Netlify | `netlify.toml` | Sets `NITRO_PRESET=netlify`; publishes `dist/client`. |
 | Render | `render.yaml` | Sets `NITRO_PRESET=node-server`; starts `node .output/server/index.mjs`. |
 
